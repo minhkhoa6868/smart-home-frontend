@@ -1,0 +1,126 @@
+\section{Use Case Details}
+
+\subsection{Use Case 1: Remote Home Control via MQTT}
+
+\newpage
+
+\subsection{Use Case 2: Environmental Monitoring}
+
+\newpage
+
+\subsection{Use Case 3: System Reports and Statistics}
+
+\begin{longtable}{|>{\centering\arraybackslash}p{0.2\linewidth}|p{0.75\linewidth}|}
+    \hline
+    % Footer for the last page
+    \textbf{Use Case ID} & 3 \\ \hline
+    \textbf{Use Case Name} & System Reports and Statistics \\ \hline
+    \textbf{Created By} & Thành Đạt \\ \hline
+    \textbf{Date Created} & 20/03/2025 \\ \hline
+    \textbf{Actors} & User \\ \hline
+    \textbf{Description} & This use case allows a user to generate system reports and view relevant statistics. The user can select the type of report desired and optionally export the resulting report in different formats. \\ \hline
+    \textbf{Preconditions} & 
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The user is logged into the system.
+        \item The system contains sufficient data to generate reports.
+        \item The user has the necessary permissions to view or export reports.
+    \end{enumerate} \\ \hline
+    \textbf{Postconditions} &
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The targeted device is in the desired state.
+        \item The system confirms the successful execution of the command via the user interface.
+    \end{enumerate} \\ \hline
+    \textbf{Normal Flow} &
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The user navigates to the “Reports” or “Statistics” section of the system interface.
+        \item The system displays available report categories or types.
+        \item The user selects a report type (use case includes Select Report Type).
+        \item The system gathers the relevant data and generates the report.
+        \item The system displays the generated report and any relevant statistics to the user.
+        \item (Optional) The user selects an export option (use case includes Export Report).
+        \item The system exports the report.
+    \end{enumerate} \\ \hline
+    \textbf{Alternative Flow} & Alternative 1 at step 2:
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The user does not have permission to view a specific report type.
+        \item The system hides or disables the option to select that report type.
+        \item The user can only see the report types they are authorized to view.
+    \end{enumerate} \\ \hline
+    \textbf{Exception} & Exception 1 at step 5:
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The system detects that there is insufficient data for the selected report.
+        \item The system displays a “No Data Available” message.
+        \item The user is returned to the reports menu.
+    \end{enumerate} 
+    Exception 2 at step 4:
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The system encounters an error
+        \item The system displays an error message.
+        \item The system logs the issue and notifies the user of the failure.
+    \end{enumerate}
+    \\ \hline
+\end{longtable}
+
+\newpage
+
+\subsection{Use Case 4: Voice Command Integration}
+
+\begin{longtable}{|>{\centering\arraybackslash}p{0.2\linewidth}|p{0.75\linewidth}|}
+    \hline
+    % Footer for the last page
+    \textbf{Use Case ID} & 4 \\ \hline
+    \textbf{Use Case Name} & Voice Command Integration \\ \hline
+    \textbf{Created By} & Quang Duy \\ \hline
+    \textbf{Date Created} & 19/03/2025 \\ \hline
+    \textbf{Actors} & User, Voice Assistant \\ \hline
+    \textbf{Description} & User controls smart home devices (lights, doors, thermostat, etc.) through voice commands. The voice command is processed by the voice assistant and sent to the smart home system to control the devices. \\ \hline
+    \textbf{Preconditions} & 
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item User has a compatible voice assistant configured and connected to the smart home system.
+        \item User has valid authentication for the smart home system.
+        \item The smart home system and devices are properly set up and connected to the system.
+        \item User is within the listening range of the voice assistant device.
+        \item The voice assistant has a stable internet connection.
+    \end{enumerate} \\ \hline
+    \textbf{Postconditions} &
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The targeted device is in the desired state.
+        \item The system confirms the successful execution of the command via the user interface.
+    \end{enumerate} \\ \hline
+    \textbf{Normal Flow} &
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item User activates the voice assistant by using a wake word (e.g., "Hey Google" or "Alexa").
+        \item User issues a voice command (e.g., "Turn on the living room lights").
+        \item The voice assistant receives the voice command and processes the speech recognition.
+        \item The voice assistant matches the voice command to a predefined action.
+        \item The voice assistant sends the command to the smart home system via an API or MQTT message.
+        \item The smart home system receives the command and processes it, sending the corresponding action to the device.
+        \item The device performs the requested action.
+        \item The smart home system sends a success status back to the voice assistant.
+        \item The voice assistant provides feedback to the user, confirming the action.
+    \end{enumerate} \\ \hline
+    \textbf{Alternative Flow} & Alternative 1 at step 2:
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item User says, "Turn off all the lights."
+        \item The voice assistant processes the command and identifies multiple devices (lights) to be controlled.
+        \item The smart home system processes each device individually and turns off all lights.
+        \item The voice assistant confirms that all the lights are turned off.
+    \end{enumerate} \\ \hline
+    \textbf{Exception} & Exception at step 3:
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The voice assistant fails to understand the command due to background noise or unclear speech.
+        \item The voice assistant asks the homeowner to repeat the command.
+    \end{enumerate} 
+    Exception at step 7:
+    \begin{enumerate}[left=0pt,label=\arabic*.,nosep,topsep=0pt,itemsep=0pt,partopsep=0pt]
+        \item The smart home system does not respond.
+        \item The voice assistant notifies the homeowner with an error message.
+    \end{enumerate}
+    \\ \hline
+\end{longtable}
+
+\newpage
+
+\subsection{Use-case 5: Security System Alerts}
+
+\newpage
