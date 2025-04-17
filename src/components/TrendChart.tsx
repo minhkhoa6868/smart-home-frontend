@@ -7,12 +7,16 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+type TrendPoint = {
+  time: string;
+  value: number;
+};
 export default function TrendChart({
   title,
   data,
 }: {
   title: string;
-  data: any[];
+  data: TrendPoint[];
 }) {
   return (
     <div className="bg-white rounded-xl shadow p-4 w-full">

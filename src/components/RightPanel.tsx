@@ -45,7 +45,7 @@ export default function RightPanel() {
         </div>
         <div className="space-y-2">
           {history.map((h, i) => (
-            <HistoryItem key={i} {...h} />
+            <HistoryItem key={i} {...h} status={h.status as "on" | "off"} />
           ))}
         </div>
       </div>
