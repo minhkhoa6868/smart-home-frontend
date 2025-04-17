@@ -1,0 +1,29 @@
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}%
+\contentsline {section}{\numberline {2}Devices}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Yolo:bit}{4}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Expansion Board}{4}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Temperature and Humidity Sensor DHT20}{4}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Light Sensor}{4}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Distance Sensor}{4}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Servo Motor}{5}{subsection.2.6}%
+\contentsline {subsection}{\numberline {2.7}Mini Fan}{5}{subsection.2.7}%
+\contentsline {subsection}{\numberline {2.8}LED RGB Lights}{5}{subsection.2.8}%
+\contentsline {section}{\numberline {3}User Requirements}{6}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Functional Requirements}{6}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Non-functional Requirements}{6}{subsection.3.2}%
+\contentsline {section}{\numberline {4}Use Case Details}{7}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Use Case 1: Remote Home Control via MQTT}{7}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Use Case 2: Environmental Monitoring}{8}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Use Case 3: System Reports and Statistics}{9}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Use Case 4: Voice Command Integration}{10}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Use-case 5: Security System Alerts}{12}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Mockups}{13}{section.5}%
+\contentsline {section}{\numberline {6}Technical Diagrams}{14}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Implementation View}{14}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Deployment View}{14}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Database Design}{15}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Entity - Relationship Diagram}{15}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Relation Schema}{15}{subsection.7.2}%
+\contentsline {section}{\numberline {8}Finished Product}{16}{section.8}%
+\contentsline {section}{\numberline {9}Conclusion}{17}{section.9}%
+\contentsline {section}{\numberline {10}References}{18}{section.10}%
