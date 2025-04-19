@@ -1,17 +1,19 @@
 import { Wind } from "lucide-react";
 
 export default function FanControlCard({
+  isOn,
   currentSpeed,
   onChangeSpeed,
 }: {
-  currentSpeed: number;
-  onChangeSpeed: (s: number) => void;
+  isOn: string;
+  currentSpeed: string;
+  onChangeSpeed: (s: string) => void;
 }) {
-  const speeds = [0, 1, 2, 3];
+  const speeds = ["0", "1", "2", "3"];
 
   return (
     <div className="bg-white rounded-xl p-4 shadow w-[180px] text-center transition-all">
-      <p className="text-sm text-gray-500 mb-1">Speed: {currentSpeed}</p>
+      <p className="text-sm text-gray-500 mb-1">{isOn}</p>
       <Wind size={36} className="mx-auto text-blue-400 mb-2" />
       <div className="font-semibold mb-2">Fan</div>
 

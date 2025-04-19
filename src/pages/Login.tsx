@@ -1,19 +1,36 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     // Gửi dữ liệu đăng nhập
     console.log("Login with:", { username, password });
-    // TODO: gọi API login tại đây
-    if (username && password) {
-      // Giả sử login hợp lệ
+
+    try {
+      const response = await axios.post("http://localhost:8080/auth/login", {
+        username,
+        password
+      });
+
+      console.log(response.data)
+
+      const token = response.data.token;
+      const userId = response.data.userId;
+      localStorage.setItem("token", token);
+      localStorage.setItem("userId", userId);
+
       navigate("/dashboard");
-    } else {
-      alert("Please enter username and password.");
+    } catch (error: any) {
+      if (error.response && error.response.status === 401) {
+        alert("Invalid username or password");
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
     }
   };
 
