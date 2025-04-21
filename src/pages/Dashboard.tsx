@@ -7,6 +7,7 @@ import { useState } from "react";
 import DoorControlCard from "../components/DoorControlCard";
 import FanControlCard from "../components/FanControlCard";
 import LightControlCard from "../components/LightControlCard";
+import VoiceRecognition from "../components/VoiceRecognition"; // Đảm bảo đường dẫn đúng
 
 // Trạng thái các thiết bị
 
@@ -34,6 +35,19 @@ export default function Dashboard() {
   const [fanSpeed, setFanSpeed] = useState(0);
   const [lightOn, setLightOn] = useState(false);
   const [lightColor, setLightColor] = useState("#ffcc00"); // default: vàng
+  const [isListening, setIsListening] = useState(false);
+  // const [command, setCommand] = useState<string | null>(null);
+
+  const handleCommand = (command: string) => {
+    if (command === "LightOff") setLightOn(false);
+    else if (command === "LightOn") setLightOn(true);
+    else if (command === "DoorClose") setDoorOpen(false);
+    else if (command === "DoorOpen") setDoorOpen(true);
+    else if (command === "FanOff") setFanSpeed(0);
+    else if (command === "FanLow") setFanSpeed(1);
+    else if (command === "FanMedium") setFanSpeed(2);
+    else if (command === "FanHigh") setFanSpeed(3);
+  };
 
   return (
     <div className="grid grid-cols-12 gap-8 min-h-screen p-6 bg-[#E8F3FC]">
@@ -55,7 +69,7 @@ export default function Dashboard() {
 
           {/* Devices */}
           <h1 className="text-xl font-semibold">Devices</h1>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             <LightControlCard
               isOn={lightOn}
               color={lightColor}
@@ -76,6 +90,20 @@ export default function Dashboard() {
               currentSpeed={fanSpeed}
               onChangeSpeed={(speed) => setFanSpeed(speed)}
             />
+            <div className="mt-4">
+              <button
+                onClick={() => setIsListening(!isListening)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+              >
+                {isListening ? "Stop Voice Control" : "Start Voice Control"}
+              </button>
+
+              <VoiceRecognition
+                isListening={isListening}
+                toggleListening={() => setIsListening(!isListening)}
+                onCommand={handleCommand}
+              />
+            </div>
           </div>
 
           {/* Trends */}
