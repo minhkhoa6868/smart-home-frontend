@@ -91,7 +91,7 @@ export default function Dashboard() {
   useEffect(() => {
     const handleGetLatestFanCommand = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/commands/fan/latest", {
+        const response = await axios.get("https://smart-home-backend-07op.onrender.com/api/commands/fan/latest", {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -104,7 +104,7 @@ export default function Dashboard() {
 
     const handleGetLatestLightCommand = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/commands/light/latest", {
+        const response = await axios.get("https://smart-home-backend-07op.onrender.com/api/commands/light/latest", {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -121,7 +121,7 @@ export default function Dashboard() {
 
   const handleSpeed = async (speed: string) => {
     try {
-      const response = await axios.post("http://localhost:8080/api/commands/fan", {
+      const response = await axios.post("https://smart-home-backend-07op.onrender.com/api/commands/fan", {
         speed: speed,
         userId: userId
       }, {
@@ -142,7 +142,7 @@ export default function Dashboard() {
     try {
       const num: string = status == "Open" ? "1" : "0";
 
-      await axios.post("http://localhost:8080/api/commands/door", {
+      await axios.post("https://smart-home-backend-07op.onrender.com/api/commands/door", {
         status: num,
         userId: userId
       }, {
@@ -159,7 +159,7 @@ export default function Dashboard() {
 
   const handleLightOn = async (status: string) => {
     try {
-      await axios.post("http://localhost:8080/api/commands/light/status", {
+      await axios.post("https://smart-home-backend-07op.onrender.com/api/commands/light/status", {
         status: status,
         userId: userId
       }, {
@@ -176,7 +176,7 @@ export default function Dashboard() {
 
   const handleLightColorChange = async (color: string) => {
     try {
-      await axios.post("http://localhost:8080/api/commands/light/color", {
+      await axios.post("https://smart-home-backend-07op.onrender.com/api/commands/light/color", {
         color: color,
         userId: userId
       }, {

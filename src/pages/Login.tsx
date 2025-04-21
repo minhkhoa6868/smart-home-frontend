@@ -12,7 +12,7 @@ export default function Login() {
     console.log("Login with:", { username, password });
 
     try {
-      const response = await axios.post("http://localhost:8080/auth/login", {
+      const response = await axios.post("https://smart-home-backend-07op.onrender.com/auth/login", {
         username,
         password
       });
