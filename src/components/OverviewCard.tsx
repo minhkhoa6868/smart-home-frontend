@@ -1,13 +1,22 @@
 export default function OverviewCard({
   title,
   value,
-  threshold,
+  threshold_upper,
+  threshold_lower,
+  unit,
 }: {
   title: string;
   value: number;
-  threshold?: number; // optional
+  threshold_upper?: number; // optional
+  threshold_lower?: number; // optional,
+  unit: string;
 }) {
-  const exceeded = threshold !== undefined && value >= threshold;
+  const hasData = value > 0;
+
+  const exceeded =
+    hasData &&
+    ((threshold_upper !== undefined && value >= threshold_upper) ||
+      (threshold_lower !== undefined && value <= threshold_lower));
 
   return (
     <div className="bg-white rounded-xl shadow p-4 text-center w-full">
@@ -36,6 +45,7 @@ export default function OverviewCard({
           {value}
         </p>
       </div>
+      <div className="text-gray-500 text-sm">{unit}</div>
     </div>
   );
 }

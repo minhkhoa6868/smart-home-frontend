@@ -11,6 +11,7 @@ import {
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const username = localStorage.getItem("username") || "User";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -25,7 +26,7 @@ export default function Sidebar() {
           src="https://i.pravatar.cc/100?img=3"
           className="w-16 h-16 rounded-full mx-auto mb-2"
         />
-        <p className="font-semibold text-black">ROWLET</p>
+        <p className="font-semibold text-black">{username}</p>
       </div>
 
       {/* Menu */}

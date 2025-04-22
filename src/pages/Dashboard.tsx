@@ -9,8 +9,8 @@ import FanControlCard from "../components/FanControlCard";
 import LightControlCard from "../components/LightControlCard";
 import VoiceRecognition from "../components/VoiceRecognition"; // Đảm bảo đường dẫn đúng
 import { Mic, MicOff } from "lucide-react";
-// import SockJS from "sockjs-client";
-// import { CompatClient, Stomp } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+import { CompatClient, Stomp } from "@stomp/stompjs";
 import axios from "axios";
 import useFetch from "../hooks/useFetch";
 
@@ -39,8 +39,8 @@ export default function Dashboard() {
   const [doorOpen, setDoorOpen] = useState("Close");
   const [fanSpeed, setFanSpeed] = useState("0");
   const [fanOn, setFanOn] = useState("Off");
-  const [lightOn, setLightOn] = useState("Off");
-  const [lightColor, setLightColor] = useState("#000000"); // default: white
+  const [lightOn, setLightOn] = useState<string | undefined>(undefined);
+  const [lightColor, setLightColor] = useState<string | undefined>(undefined); // default: white
   const [humidity, setHumidity] = useState(0);
   const [temperature, setTemperature] = useState(0);
   const [brightness, setBrightness] = useState(0);
@@ -48,40 +48,53 @@ export default function Dashboard() {
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
-  // useEffect(() => {
-  //   const socket = new SockJS("http://localhost:8080/ws");
-  //   const stompClient: CompatClient = Stomp.over(socket);
+  console.log(lightOn, lightColor);
+  useEffect(() => {
+    const socket = new SockJS(
+      `https://smart-home-backend-07op.onrender.com/ws?Authorization=${encodeURIComponent(
+        `Bearer ${token}`
+      )}`
+    );
 
-  //   stompClient.connect({}, () => {
-  //     console.log("WebSocket connected");
+    const stompClient: CompatClient = Stomp.over(socket);
 
-  //     stompClient.subscribe("/topic/humidity", (message) => {
-  //       const data = JSON.parse(message.body);
-  //       setHumidity(data.humidity);
-  //     });
+    stompClient.connect(
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+      () => {
+        console.log("WebSocket connected");
 
-  //     stompClient.subscribe("/topic/temperature", (message) => {
-  //       const data = JSON.parse(message.body);
-  //       setTemperature(data.temperature);
-  //     });
+        stompClient.subscribe("/topic/humidity", (message) => {
+          const data = JSON.parse(message.body);
+          setHumidity(data.humidity);
+        });
 
-  //     stompClient.subscribe("/topic/light", (message) => {
-  //       const data = JSON.parse(message.body);
-  //       setBrightness(data.brightness);
-  //     });
+        stompClient.subscribe("/topic/temperature", (message) => {
+          const data = JSON.parse(message.body);
+          setTemperature(data.temperature);
+        });
 
-  //     stompClient.subscribe("/topic/distance", (message) => {
-  //       const data = JSON.parse(message.body);
-  //       setDistance(data.motion);
-  //     });
-  //   });
+        stompClient.subscribe("/topic/light", (message) => {
+          const data = JSON.parse(message.body);
+          setBrightness(data.brightness);
+        });
 
-  //   return () => {
-  //     stompClient.disconnect(() => {
-  //       console.log("WebSocket disconnected");
-  //     });
-  //   };
-  // }, [])
+        stompClient.subscribe("/topic/distance", (message) => {
+          const data = JSON.parse(message.body);
+          setDistance(data.motion);
+        });
+      }
+    );
+
+    return () => {
+      stompClient.disconnect(() => {
+        console.log("WebSocket disconnected");
+      });
+    };
+  }, []);
 
   // fetch api for fan device
   useFetch("FAN-1", setFanOn);
@@ -266,29 +279,41 @@ export default function Dashboard() {
           {/* Environment Overview */}
           <h1 className="text-xl font-semibold">Environment Overview</h1>
           <div className="grid grid-cols-4 gap-18">
-            <OverviewCard title="Humidity" value={humidity} threshold={30} />
+            <OverviewCard
+              title="Humidity"
+              value={humidity}
+              threshold_upper={100}
+              threshold_lower={60}
+              unit="%"
+            />
             <OverviewCard
               title="Brightness"
               value={brightness}
-              threshold={10}
+              // threshold_lower={10}
+              // threshold_upper={10}
+              unit="%"
             />
             <OverviewCard
               title="Temperature"
               value={temperature}
-              threshold={33}
+              threshold_upper={33}
+              threshold_lower={10}
+              unit="*C"
             />
-            <OverviewCard title="Distance" value={distance} />
+            <OverviewCard title="Distance" value={distance} unit="cm" />
           </div>
 
           {/* Devices */}
           <h1 className="text-xl font-semibold">Devices</h1>
           <div className="grid grid-cols-4 gap-4">
-            <LightControlCard
-              isOn={lightOn}
-              color={lightColor}
-              onToggle={(status) => handleLightOn(status)}
-              onColorChange={(hex) => handleLightColorChange(hex)}
-            />
+            {lightOn && lightColor && (
+              <LightControlCard
+                isOn={lightOn}
+                color={lightColor}
+                onToggle={(status) => handleLightOn(status)}
+                onColorChange={(hex) => handleLightColorChange(hex)}
+              />
+            )}
 
             <DoorControlCard
               isOpen={doorOpen}

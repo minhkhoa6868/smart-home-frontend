@@ -17,6 +17,7 @@ export default function LightControlCard({
   useEffect(() => {
     const isValidColor = /^#[0-9A-Fa-f]{6}$/.test(color);
     setSelectedColor(isValidColor ? color : "#ffffff");
+    console.log();
   }, [color]);
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -26,7 +26,7 @@ export default function Login() {
       const userId = response.data.userId;
       localStorage.setItem("token", token);
       localStorage.setItem("userId", userId);
-
+      localStorage.setItem("username", username); // Lưu tên người dùng vào localStorage
       navigate("/dashboard");
     } catch (error: any) {
       if (error.response && error.response.status === 401) {
