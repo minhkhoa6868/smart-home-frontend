@@ -1,7 +1,22 @@
-import { NavLink } from "react-router-dom";
-import { Home, User, Info, LogOut } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  Home,
+  User,
+  Info,
+  LogOut,
+  History,
+  Settings,
+  BarChart,
+} from "lucide-react";
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    navigate("/login");
+  };
   return (
     <div className="bg-white h-full rounded-2xl shadow p-4 flex flex-col items-center">
       {/* Avatar */}
@@ -16,17 +31,33 @@ export default function Sidebar() {
       {/* Menu */}
       <div className="w-full text-left px-2">
         <nav className="space-y-4">
-          <SidebarLink to="/" icon={<Home size={18} />} label="Home" />
+          <SidebarLink to="/Dashboard" icon={<Home size={18} />} label="Home" />
           <SidebarLink
             to="/profile"
             icon={<User size={18} />}
             label="Profile"
           />
+          <SidebarLink
+            to="/device"
+            icon={<Settings size={18} />}
+            label="Device Control"
+          />
+          <SidebarLink
+            to="/statistic"
+            icon={<BarChart size={18} />}
+            label="Statistic"
+          />
+          <SidebarLink
+            to="/history"
+            icon={<History size={18} />}
+            label="History"
+          />
           <SidebarLink to="/faq" icon={<Info size={18} />} label="FAQ's" />
           <SidebarLink
-            to="/logout"
+            to="/login"
             icon={<LogOut size={18} />}
             label="Logout"
+            onClick={handleLogout}
           />
         </nav>
       </div>
@@ -38,14 +69,17 @@ function SidebarLink({
   to,
   icon,
   label,
+  onClick,
 }: {
   to: string;
   icon: React.ReactNode;
   label: string;
+  onClick?: () => void;
 }) {
   return (
     <NavLink
       to={to}
+      onClick={onClick}
       className={({ isActive }) =>
         `flex items-center space-x-2 px-2 py-1 rounded-md transition ${
           isActive

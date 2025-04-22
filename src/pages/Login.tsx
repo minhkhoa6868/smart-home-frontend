@@ -12,12 +12,15 @@ export default function Login() {
     console.log("Login with:", { username, password });
 
     try {
-      const response = await axios.post("https://smart-home-backend-07op.onrender.com/auth/login", {
-        username,
-        password
-      });
+      const response = await axios.post(
+        "https://smart-home-backend-07op.onrender.com/auth/login",
+        {
+          username,
+          password,
+        }
+      );
 
-      console.log(response.data)
+      console.log(response.data);
 
       const token = response.data.token;
       const userId = response.data.userId;
@@ -71,7 +74,7 @@ export default function Login() {
 
         <p className="text-center text-sm mt-4 text-gray-600">
           Don't have an account?{" "}
-          <a href="#" className="text-blue-400 hover:underline">
+          <a href="/signup" className="text-blue-400 hover:underline">
             Sign up
           </a>
         </p>

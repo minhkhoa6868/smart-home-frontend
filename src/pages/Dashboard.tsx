@@ -8,9 +8,9 @@ import DoorControlCard from "../components/DoorControlCard";
 import FanControlCard from "../components/FanControlCard";
 import LightControlCard from "../components/LightControlCard";
 import VoiceRecognition from "../components/VoiceRecognition"; // Đảm bảo đường dẫn đúng
-
-import SockJS from "sockjs-client";
-import { CompatClient, Stomp } from "@stomp/stompjs";
+import { Mic, MicOff } from "lucide-react";
+// import SockJS from "sockjs-client";
+// import { CompatClient, Stomp } from "@stomp/stompjs";
 import axios from "axios";
 import useFetch from "../hooks/useFetch";
 
@@ -90,7 +90,7 @@ export default function Dashboard() {
   useFetch("LED-1", setLightColor);
 
   useEffect(() => {
-    const handleGetLatestFanCommand = async () => {
+    const GetLatestFanCommand = async () => {
       try {
         const response = await axios.get(
           "https://smart-home-backend-07op.onrender.com/api/commands/fan/latest",
@@ -106,7 +106,7 @@ export default function Dashboard() {
       }
     };
 
-    const handleGetLatestLightCommand = async () => {
+    const GetLatestLightCommand = async () => {
       try {
         const response = await axios.get(
           "https://smart-home-backend-07op.onrender.com/api/commands/light/latest",
@@ -122,8 +122,8 @@ export default function Dashboard() {
       }
     };
 
-    handleGetLatestFanCommand();
-    handleGetLatestLightCommand();
+    GetLatestFanCommand();
+    GetLatestLightCommand();
   }, [setFanSpeed, setLightColor]);
 
   const handleSpeed = async (speed: string) => {
@@ -213,17 +213,44 @@ export default function Dashboard() {
     }
   };
   const [isListening, setIsListening] = useState(false);
-  // const [command, setCommand] = useState<string | null>(null);
+  const [command, setCommand] = useState<string | null>(null);
 
   const handleCommand = (command: string) => {
-    if (command === "LightOff") setLightOn(false);
-    else if (command === "LightOn") setLightOn(true);
-    else if (command === "DoorClose") setDoorOpen(false);
-    else if (command === "DoorOpen") setDoorOpen(true);
-    else if (command === "FanOff") setFanSpeed(0);
-    else if (command === "FanLow") setFanSpeed(1);
-    else if (command === "FanMedium") setFanSpeed(2);
-    else if (command === "FanHigh") setFanSpeed(3);
+    switch (command) {
+      // Light
+      case "LightOn":
+        handleLightOn("On");
+        break;
+      case "LightOff":
+        handleLightOn("Off");
+        break;
+
+      // Door
+      case "DoorOpen":
+        handleDoorOpen("Open");
+        break;
+      case "DoorClose":
+        handleDoorOpen("Close");
+        break;
+
+      // Fan
+      case "FanOff":
+        handleSpeed("0");
+        break;
+      case "FanLow":
+        handleSpeed("1");
+        break;
+      case "FanMedium":
+        handleSpeed("2");
+        break;
+      case "FanHigh":
+        handleSpeed("3");
+        break;
+
+      default:
+        console.log("Unknown voice command:", command);
+        break;
+    }
   };
 
   return (
@@ -273,12 +300,20 @@ export default function Dashboard() {
               currentSpeed={fanSpeed}
               onChangeSpeed={(speed) => handleSpeed(speed)}
             />
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
               <button
                 onClick={() => setIsListening(!isListening)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md"
               >
-                {isListening ? "Stop Voice Control" : "Start Voice Control"}
+                {isListening ? (
+                  <>
+                    <MicOff className="w-5 h-5" /> Stop Voice Control
+                  </>
+                ) : (
+                  <>
+                    <Mic className="w-5 h-5" /> Start Voice Control
+                  </>
+                )}
               </button>
 
               <VoiceRecognition
