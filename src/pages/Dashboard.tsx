@@ -39,12 +39,13 @@ export default function Dashboard() {
   const [doorOpen, setDoorOpen] = useState("Close");
   const [fanSpeed, setFanSpeed] = useState("0");
   const [fanOn, setFanOn] = useState("Off");
-  const [lightOn, setLightOn] = useState<string | undefined>(undefined);
-  const [lightColor, setLightColor] = useState<string | undefined>(undefined); // default: white
+  const [lightOn, setLightOn] = useState<string>("Off");
+  const [lightColor, setLightColor] = useState<string>("#fffff"); // default: white
   const [humidity, setHumidity] = useState(0);
   const [temperature, setTemperature] = useState(0);
-  const [brightness, setBrightness] = useState(0);
-  const [distance, setDistance] = useState(0);
+  // const [brightness, setBrightness] = useState(0);
+  // const [distance, setDistance] = useState(0);
+  const [command, setCommand] = useState<string>("");
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
 
@@ -77,15 +78,15 @@ export default function Dashboard() {
           setTemperature(data.temperature);
         });
 
-        stompClient.subscribe("/topic/light", (message) => {
-          const data = JSON.parse(message.body);
-          setBrightness(data.brightness);
-        });
+        // stompClient.subscribe("/topic/light", (message) => {
+        //   const data = JSON.parse(message.body);
+        //   setBrightness(data.brightness);
+        // });
 
-        stompClient.subscribe("/topic/distance", (message) => {
-          const data = JSON.parse(message.body);
-          setDistance(data.motion);
-        });
+        // stompClient.subscribe("/topic/distance", (message) => {
+        //   const data = JSON.parse(message.body);
+        //   setDistance(data.motion);
+        // });
       }
     );
 
@@ -97,10 +98,9 @@ export default function Dashboard() {
   }, []);
 
   // fetch api for fan device
-  useFetch("FAN-1", setFanOn);
-  useFetch("DOOR-1", setDoorOpen);
-  useFetch("LED-1", setLightOn);
-  useFetch("LED-1", setLightColor);
+  useFetch("fan", setFanOn);
+  useFetch("door", setDoorOpen);
+  useFetch("led", setLightOn);
 
   useEffect(() => {
     const GetLatestFanCommand = async () => {
@@ -226,7 +226,6 @@ export default function Dashboard() {
     }
   };
   const [isListening, setIsListening] = useState(false);
-  const [command, setCommand] = useState<string | null>(null);
 
   const handleCommand = (command: string) => {
     switch (command) {
@@ -286,13 +285,7 @@ export default function Dashboard() {
               threshold_lower={60}
               unit="%"
             />
-            <OverviewCard
-              title="Brightness"
-              value={brightness}
-              // threshold_lower={10}
-              // threshold_upper={10}
-              unit="%"
-            />
+
             <OverviewCard
               title="Temperature"
               value={temperature}
@@ -300,7 +293,6 @@ export default function Dashboard() {
               threshold_lower={10}
               unit="*C"
             />
-            <OverviewCard title="Distance" value={distance} unit="cm" />
           </div>
 
           {/* Devices */}
@@ -325,26 +317,54 @@ export default function Dashboard() {
               currentSpeed={fanSpeed}
               onChangeSpeed={(speed) => handleSpeed(speed)}
             />
-            <div className="mt-4 space-y-2">
-              <button
-                onClick={() => setIsListening(!isListening)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md"
+
+            <div className="bg-white rounded-xl p-4 shadow w-[180px] text-center transition-all space-y-3">
+              <p className="text-sm text-gray-500 mb-1">Voice Command</p>
+
+              <div className="flex justify-center items-center">
+                <button
+                  onClick={() => setIsListening(!isListening)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full transition ${
+                    isListening
+                      ? "bg-red-500 text-white"
+                      : "bg-blue-500 text-white"
+                  }`}
+                >
+                  {isListening ? (
+                    <>
+                      <MicOff className="w-5 h-5" />
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="w-5 h-5" />
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div
+                className={`text-sm font-medium transition ${
+                  isListening ? "text-red-500" : "text-gray-400"
+                }`}
               >
-                {isListening ? (
-                  <>
-                    <MicOff className="w-5 h-5" /> Stop Voice Control
-                  </>
-                ) : (
-                  <>
-                    <Mic className="w-5 h-5" /> Start Voice Control
-                  </>
-                )}
-              </button>
+                {isListening ? "Listening..." : "Click to speak"}
+              </div>
+
+              {/* Kết quả giọng nói hiện ra khi nhận được */}
+              {command && (
+                <div className="text-xs text-gray-600 italic mt-2">
+                  Your Command:{" "}
+                  <span className="font-semibold text-black">{command}</span>
+                </div>
+              )}
 
               <VoiceRecognition
                 isListening={isListening}
                 toggleListening={() => setIsListening(!isListening)}
-                onCommand={handleCommand}
+                onCommand={(cmd) => {
+                  handleCommand(cmd);
+                  setCommand(cmd);
+                }}
               />
             </div>
           </div>

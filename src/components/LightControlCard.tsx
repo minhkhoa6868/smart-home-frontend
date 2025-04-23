@@ -40,9 +40,13 @@ export default function LightControlCard({
       >
         <Lightbulb
           size={24}
-          className={`${
-            isOn === "On" ? "text-white" : "text-gray-400"
-          } transition duration-300`}
+          className={`transition duration-300 ${
+            isOn === "On"
+              ? selectedColor.toLowerCase() === "#ffffff"
+                ? "text-gray-600" // đổi thành xám nếu nền trắng
+                : "text-white"
+              : "text-gray-400"
+          }`}
         />
       </div>
 
@@ -74,9 +78,9 @@ export default function LightControlCard({
         {selectedColor !== color && (
           <button
             onClick={handleSubmitColor}
-            className="px-2 py-2 bg-gray-200 text-white text-sm rounded hover:bg-green-400 transition flex items-center gap-1"
+            className="px-2 py-2 bg-gray-200 text-white text-sm rounded hover:bg-blue-400 transition flex items-center gap-1"
           >
-            <span>✔️</span>
+            <span>OK</span>
           </button>
         )}
       </div>
