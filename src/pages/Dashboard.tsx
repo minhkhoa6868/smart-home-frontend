@@ -16,23 +16,28 @@ import useFetch from "../hooks/useFetch";
 
 // Trạng thái các thiết bị
 
-const humidityData = [
-  { time: "8AM", value: 24 },
-  { time: "10AM", value: 33 },
-  { time: "12PM", value: 29 },
-  { time: "2PM", value: 35 },
-  { time: "4PM", value: 24 },
-  { time: "6PM", value: 40 },
-];
+type RawData = {
+  timestamp: string;
+  [key: string]: number | string | null;
+};
+type TrendPoint = { time: string; value: number };
 
-const temperatureData = [
-  { time: "8AM", value: 24 },
-  { time: "10AM", value: 33 },
-  { time: "12PM", value: 29 },
-  { time: "2PM", value: 35 },
-  { time: "4PM", value: 24 },
-  { time: "6PM", value: 40 },
-];
+function handleTrendData(rawData: RawData[], valueKey: string): TrendPoint[] {
+  return rawData.map((item) => {
+    const date = new Date(item.timestamp);
+    const hour = date.getHours().toString();
+    const minute = date.getMinutes().toString().padStart(2, "0");
+
+    const rawValue = item[valueKey];
+    const safeValue =
+      typeof rawValue === "number" && !isNaN(rawValue) ? rawValue : 0;
+
+    return {
+      time: `${hour}:${minute}`,
+      value: safeValue,
+    };
+  });
+}
 
 // src/pages/Dashboard.tsx
 export default function Dashboard() {
@@ -48,6 +53,8 @@ export default function Dashboard() {
   const [command, setCommand] = useState<string>("");
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
+  const [humidityTrend, setHumidityTrend] = useState([]);
+  const [temperatureTrend, setTemperatureTrend] = useState([]);
 
   console.log(lightOn, lightColor);
   useEffect(() => {
@@ -138,6 +145,43 @@ export default function Dashboard() {
     GetLatestFanCommand();
     GetLatestLightCommand();
   }, [setFanSpeed, setLightColor]);
+
+  useEffect(() => {
+    const fetchHumidityData = async () => {
+      try {
+        const response = await axios.get(
+          "https://smart-home-backend-07op.onrender.com/api/records/humidity/today",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(response.data);
+        setHumidityTrend(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    const fetchTemperatureData = async () => {
+      try {
+        const response = await axios.get(
+          "https://smart-home-backend-07op.onrender.com/api/records/temperature/today",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log(response.data);
+        setTemperatureTrend(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchHumidityData();
+    fetchTemperatureData();
+  }, [setHumidityTrend, setTemperatureTrend]);
 
   const handleSpeed = async (speed: string) => {
     try {
@@ -372,8 +416,14 @@ export default function Dashboard() {
           {/* Trends */}
           <h1 className="text-xl font-semibold">Environmental Trends</h1>
           <div className="grid grid-cols-2 gap-4">
-            <TrendChart title="Humidity" data={humidityData} />
-            <TrendChart title="Temperature" data={temperatureData} />
+            <TrendChart
+              title="Humidity"
+              data={handleTrendData(humidityTrend)}
+            />
+            <TrendChart
+              title="Temperature"
+              data={handleTrendData(temperatureTrend)}
+            />
           </div>
         </div>
       </div>
