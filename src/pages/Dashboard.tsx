@@ -418,11 +418,11 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 gap-4">
             <TrendChart
               title="Humidity"
-              data={handleTrendData(humidityTrend)}
+              data={handleTrendData(humidityTrend, "humidity")}
             />
             <TrendChart
               title="Temperature"
-              data={handleTrendData(temperatureTrend)}
+              data={handleTrendData(temperatureTrend, "temperature")}
             />
           </div>
         </div>

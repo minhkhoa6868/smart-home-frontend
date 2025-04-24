@@ -7,6 +7,7 @@ import Signup from "./pages/Signup";
 import History from "./pages/History";
 import Profile from "./pages/Profile";
 import DeviceControl from "./pages/DeviceControl";
+import Statistic from "./pages/Statistic";
 function App() {
   return (
     <Router>
@@ -18,6 +19,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/device" element={<DeviceControl />} />
+        <Route path="/statistic" element={<Statistic />} />
         {/* Thêm route khác tại đây nếu cần */}
       </Routes>
     </Router>

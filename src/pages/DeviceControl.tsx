@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 
 import RightPanel from "../components/RightPanel";
-
-import LightAdvancedControlCard from "../components/LightAdvancedControlCard";
+import SecurityMode from "../components/SecurityMode";
+import LightScheduleMode from "../components/LightScheduleMode";
 
 export default function DeviceControl() {
   return (
@@ -13,8 +12,9 @@ export default function DeviceControl() {
         <Sidebar />
       </div>
       {/* Main Content - Center */}
-      <div className="col-span-8">
-        <LightAdvancedControlCard />
+      <div className="col-span-8 space-y-8">
+        <SecurityMode />
+        <LightScheduleMode />
       </div>
 
       <div className="col-span-2">
