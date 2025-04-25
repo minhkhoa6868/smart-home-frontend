@@ -1,34 +1,92 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { Info } from "lucide-react";
+import formatToDatetimeLocal from "../utils/changeDateTime";
 
 export default function LightScheduleMode() {
   const [enabled, setEnabled] = useState(false);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const token = localStorage.getItem("token");
+
+  const fetchLightModeStatus = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/device/LED-1/auto-mode",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(response.data);
+
+      setEnabled(response.data.isAutoMode);
+      if (response.data.startTime) {
+        const formattedStart = formatToDatetimeLocal(response.data.startTime);
+        setStartTime(formattedStart);
+      } else {
+        setStartTime("");
+      }
+
+      if (response.data.endTime) {
+        const formattedEnd = formatToDatetimeLocal(response.data.endTime);
+        setEndTime(formattedEnd);
+      } else {
+        setEndTime("");
+      }
+      
+    } catch (error) {
+      console.error("Error fetching security mode status:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLightModeStatus();
+  }, [setEnabled, setStartTime, setEndTime]);
 
   const handleToggle = async () => {
     try {
       if (!enabled) {
         // Bật chế độ auto
+        if (startTime == "" || endTime == "") {
+          alert("Please set start time and end time");
+          return;
+        }
         const payload = {
-          startTime: new Date(`2025-04-24T${startTime}:00+07:00`).toISOString(),
-          endTime: new Date(`2025-04-25T${endTime}:00+07:00`).toISOString(),
+          startTime: new Date(startTime).toISOString(),
+          endTime: new Date(endTime).toISOString(),
         };
-        await axios.post(
+        const response = await axios.post(
           "https://smart-home-backend-07op.onrender.com/api/commands/light/auto-mode/on",
-          payload
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-        console.log("Auto mode ON");
+
+        alert(response.data.message);
       } else {
         // Tắt chế độ auto
-        await axios.post(
-          "https://smart-home-backend-07op.onrender.com/api/commands/light/auto-mode/off"
+        const response = await axios.post(
+          "https://smart-home-backend-07op.onrender.com/api/commands/light/auto-mode/off",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-        console.log("Auto mode OFF");
+
+        alert(response.data.message);
+        setStartTime("");
+        setEndTime("");
       }
 
-      setEnabled(!enabled);
+      setEnabled((prev) => !prev);
     } catch (error) {
       console.error("Error toggling auto mode:", error);
     }
@@ -39,11 +97,9 @@ export default function LightScheduleMode() {
       <div className="flex justify-between items-center">
         <p className="text-lg font-medium flex items-center gap-2">
           Light Schedule Mode
-          <Info
-            size={18}
-            className="text-gray-500 cursor-pointer"
-            title="Enable lights to turn on/off automatically during a time range."
-          />
+          <span title="Enable lights to turn on/off automatically during a time range.">
+            <Info size={18} className="text-gray-500 cursor-pointer" />
+          </span>
         </p>
 
         {/* Toggle */}
@@ -67,7 +123,7 @@ export default function LightScheduleMode() {
             Start Time
           </label>
           <input
-            type="time"
+            type="datetime-local"
             id="start-time"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
@@ -80,7 +136,7 @@ export default function LightScheduleMode() {
             End Time
           </label>
           <input
-            type="time"
+            type="datetime-local"
             id="end-time"
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}

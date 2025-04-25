@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import HistoryItem from "../components/HistoryItem";
 import RightPanel from "../components/RightPanel";
@@ -11,8 +11,12 @@ type HistoryRecord = {
   status: "on" | "off";
 };
 
+const ITEMS_PER_PAGE = 12;
+
 export default function History() {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
   const formatTime = (timestamp: string): string => {
     const date = new Date(timestamp);
 
@@ -25,37 +29,52 @@ export default function History() {
       year: "numeric",
     });
   };
+
+  const fetchHistory = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/commands/all",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = response.data;
+      console.log("History data:", data);
+      const formatted: HistoryRecord[] = data.map((item: any) => ({
+        label: item.deviceName,
+        time: formatTime(item.timestamp),
+        user: item.userName,
+        status: item.status.toLowerCase() === "on" ? "on" : "off",
+      }));
+
+      setHistory(formatted);
+    } catch (error) {
+      console.error("Failed to fetch history:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchHistory = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/commands/five-latest",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const data = response.data;
-        console.log("History data:", data);
-        const formatted: HistoryRecord[] = data.map((item: any) => ({
-          label: item.deviceName,
-          time: formatTime(item.timestamp),
-          user: item.userName,
-          status: item.status.toLowerCase() === "on" ? "on" : "off",
-        }));
-
-        setHistory(formatted);
-      } catch (error) {
-        console.error("Failed to fetch history:", error);
-      }
-    };
-
     fetchHistory();
   }, []);
+
+  const totalPages = Math.ceil(history.length / ITEMS_PER_PAGE);
+  const paginatedHistory = history.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handlePrevPage = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
 
   return (
     <div className="grid grid-cols-12 gap-8 min-h-screen p-6 bg-[#E8F3FC]">
@@ -68,11 +87,34 @@ export default function History() {
         <h1 className="font-semibold text-2xl ml-2 mb-4">History</h1>
         <div className="bg-white rounded-xl p-4 shadow">
           <div className="space-y-2">
-            {history.length > 0 ? (
-              history.map((h, i) => <HistoryItem key={i} {...h} />)
+            {paginatedHistory.length > 0 ? (
+              paginatedHistory.map((h, i) => <HistoryItem key={i} {...h} />)
             ) : (
               <p className="text-gray-500">No history available.</p>
             )}
+
+            {/* Pagination controls */}
+            <div className="flex justify-between pt-4">
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              <span className="text-sm">
+                Page {currentPage} of {totalPages}
+              </span>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       </div>

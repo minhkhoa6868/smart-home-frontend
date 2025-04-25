@@ -1,8 +1,124 @@
+import axios from "axios";
 import { Info } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import formatToDatetimeLocal from "../utils/changeDateTime";
+import SockJS from "sockjs-client";
+import { CompatClient, Stomp } from "@stomp/stompjs";
 
 export default function SecurityMode() {
   const [isOn, setOn] = useState(false);
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const token = localStorage.getItem("token");
+
+  const fetchSecurityModeStatus = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/device/DISTANCE-1/auto-mode",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setOn(response.data.isAutoMode);
+      if (response.data.startTime) {
+        const formattedStart = formatToDatetimeLocal(response.data.startTime);
+        setStartTime(formattedStart);
+      } else {
+        setStartTime("");
+      }
+
+      if (response.data.endTime) {
+        const formattedEnd = formatToDatetimeLocal(response.data.endTime);
+        setEndTime(formattedEnd);
+      } else {
+        setEndTime("");
+      }
+    } catch (error) {
+      console.error("Error fetching security mode status:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSecurityModeStatus();
+  }, [setOn, setStartTime, setEndTime]);
+
+  useEffect(() => {
+    const socket = new SockJS(
+      `https://smart-home-backend-07op.onrender.com/ws?Authorization=${encodeURIComponent(
+        `Bearer ${token}`
+      )}`
+    );
+    const stompClient: CompatClient = Stomp.over(socket);
+
+    stompClient.connect({}, () => {
+      console.log("WebSocket connected");
+
+      stompClient.subscribe("/topic/alert", (message) => {
+        const alertData = JSON.parse(message.body);
+
+        if (alertData.alert) {
+          alert(alertData.message);
+        }
+      });
+    });
+
+    return () => {
+      if (stompClient.connected) {
+        stompClient.disconnect(() => {
+          console.log("WebSocket disconnected");
+        });
+      }
+    };
+  }, []);
+
+  const handleToggle = async () => {
+    try {
+      if (!isOn) {
+        if (startTime == "" || endTime == "") {
+          alert("Please set start time and end time");
+          return;
+        }
+        const payload = {
+          startTime: new Date(startTime).toISOString(),
+          endTime: new Date(endTime).toISOString(),
+        };
+
+        const response = await axios.post(
+          "https://smart-home-backend-07op.onrender.com/api/commands/security-mode/on",
+          payload,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        alert(response.data.message);
+      } else {
+        const response = await axios.post(
+          "https://smart-home-backend-07op.onrender.com/api/commands/security-mode/off",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        alert(response.data.message);
+        setStartTime("");
+        setEndTime("");
+      }
+
+      setOn((prev) => !prev);
+    } catch (error: any) {
+      console.error("Error toggling security mode:", error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl w-full p-8 space-y-4">
       <div className="flex justify-between items-center">
@@ -13,9 +129,9 @@ export default function SecurityMode() {
 
         {/* Toggle switch */}
         <button
-          onClick={() => setOn(!isOn)}
+          onClick={handleToggle}
           className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 ${
-            isOn ? "bg-blue-500" : "bg-gray-200"
+            isOn ? "bg-green-500" : "bg-gray-300"
           }`}
         >
           <span
@@ -33,8 +149,10 @@ export default function SecurityMode() {
             Start Time
           </label>
           <input
-            type="time"
+            type="datetime-local"
             id="start-time"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -44,8 +162,10 @@ export default function SecurityMode() {
             End Time
           </label>
           <input
-            type="time"
+            type="datetime-local"
             id="end-time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
             className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

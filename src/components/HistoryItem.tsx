@@ -1,4 +1,6 @@
-export default function HistoryItem({
+import { memo } from "react";
+
+export default memo(function HistoryItem({
   label,
   time,
   user,
@@ -25,4 +27,4 @@ export default function HistoryItem({
       <span className="text-xs text-gray-500">{time}</span>
     </div>
   );
-}
+})

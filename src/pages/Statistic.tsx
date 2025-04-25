@@ -9,42 +9,45 @@ export default function Statistic() {
   const [humidityTrend, setHumidityTrend] = useState([]);
   const [temperatureTrend, setTemperatureTrend] = useState([]);
   const token = localStorage.getItem("token");
+
+  const fetchHumidityData = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/records/humidity/today",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response.data);
+      setHumidityTrend(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const fetchTemperatureData = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/records/temperature/today",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response.data);
+      setTemperatureTrend(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    const fetchHumidityData = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/records/humidity/today",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response.data);
-        setHumidityTrend(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    const fetchTemperatureData = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/records/temperature/today",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response.data);
-        setTemperatureTrend(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
     fetchHumidityData();
     fetchTemperatureData();
   }, [setHumidityTrend, setTemperatureTrend]);
+  
   return (
     <div className="grid grid-cols-12 gap-8 min-h-screen p-6 bg-[#E8F3FC]">
       {/* Sidebar - Left */}

@@ -14,31 +14,6 @@ import { CompatClient, Stomp } from "@stomp/stompjs";
 import axios from "axios";
 import useFetch from "../hooks/useFetch";
 
-// Trạng thái các thiết bị
-
-type RawData = {
-  timestamp: string;
-  [key: string]: number | string | null;
-};
-type TrendPoint = { time: string; value: number };
-
-function handleTrendData(rawData: RawData[], valueKey: string): TrendPoint[] {
-  return rawData.map((item) => {
-    const date = new Date(item.timestamp);
-    const hour = date.getHours().toString();
-    const minute = date.getMinutes().toString().padStart(2, "0");
-
-    const rawValue = item[valueKey];
-    const safeValue =
-      typeof rawValue === "number" && !isNaN(rawValue) ? rawValue : 0;
-
-    return {
-      time: `${hour}:${minute}`,
-      value: safeValue,
-    };
-  });
-}
-
 // src/pages/Dashboard.tsx
 export default function Dashboard() {
   const [doorOpen, setDoorOpen] = useState("Close");
@@ -109,79 +84,78 @@ export default function Dashboard() {
   useFetch("door", setDoorOpen);
   useFetch("led", setLightOn);
 
+  const getLatestFanCommand = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/commands/fan/latest",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setFanSpeed(response.data.speed);
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const getLatestLightCommand = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/commands/light/latest",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setLightColor(response.data.color);
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const fetchHumidityData = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/records/humidity/today",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response.data);
+      setHumidityTrend(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchTemperatureData = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/records/temperature/today",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log(response.data);
+      setTemperatureTrend(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    const GetLatestFanCommand = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/commands/fan/latest",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setFanSpeed(response.data.speed);
-      } catch (error: any) {
-        console.log(error);
-      }
-    };
-
-    const GetLatestLightCommand = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/commands/light/latest",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setLightColor(response.data.color);
-      } catch (error: any) {
-        console.log(error);
-      }
-    };
-
-    GetLatestFanCommand();
-    GetLatestLightCommand();
-  }, [setFanSpeed, setLightColor]);
-
-  useEffect(() => {
-    const fetchHumidityData = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/records/humidity/today",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response.data);
-        setHumidityTrend(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    const fetchTemperatureData = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/records/temperature/today",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response.data);
-        setTemperatureTrend(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    getLatestFanCommand();
+    getLatestLightCommand();
     fetchHumidityData();
     fetchTemperatureData();
-  }, [setHumidityTrend, setTemperatureTrend]);
+  }, [setFanSpeed, setLightColor, setHumidityTrend, setTemperatureTrend]);
 
   const handleSpeed = async (speed: string) => {
     try {
@@ -418,11 +392,11 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 gap-4">
             <TrendChart
               title="Humidity"
-              data={handleTrendData(humidityTrend, "humidity")}
+              data={humidityTrend}
             />
             <TrendChart
               title="Temperature"
-              data={handleTrendData(temperatureTrend, "temperature")}
+              data={temperatureTrend}
             />
           </div>
         </div>

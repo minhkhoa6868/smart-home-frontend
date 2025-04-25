@@ -1,11 +1,42 @@
+import { useEffect, useState } from "react";
 import MemberCard from "./MemberCard";
+import axios from "axios";
+
+interface Member {
+  name: string;
+}
 
 export default function RightPanel() {
-  const members = [
-    { name: "Jaquiline", avatar: "https://i.pravatar.cc/100?u=1" },
-    { name: "Sennorita", avatar: "https://i.pravatar.cc/100?u=2" },
-    { name: "Firoz", avatar: "https://i.pravatar.cc/100?u=3" },
-  ];
+  // const members = [
+  //   { name: "Jaquiline", avatar: "https://i.pravatar.cc/100?u=1" },
+  //   { name: "Sennorita", avatar: "https://i.pravatar.cc/100?u=2" },
+  //   { name: "Firoz", avatar: "https://i.pravatar.cc/100?u=3" },
+  // ];
+
+  const [members, setMembers] = useState<Member[]>([]);
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+
+  const fetchMembers = async () => {
+    try {
+      const response = await axios.get(`https://smart-home-backend-07op.onrender.com/api/user/${userId}/members`, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(response.data);
+      setMembers(response.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchMembers();
+  }, [setMembers])
 
   return (
     <div className="space-y-4">
@@ -18,8 +49,8 @@ export default function RightPanel() {
           </a>
         </div>
         <div className="space-y-2">
-          {members.map((m) => (
-            <MemberCard key={m.name} {...m} />
+          {members.map((m, index) => (
+            <MemberCard key={index} name={m.name} />
           ))}
         </div>
         <button className="mt-4 w-full bg-blue-100 text-blue-600 rounded-full py-2 text-sm font-medium">
