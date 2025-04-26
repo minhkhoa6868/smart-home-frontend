@@ -13,6 +13,7 @@ import SockJS from "sockjs-client";
 import { CompatClient, Stomp } from "@stomp/stompjs";
 import axios from "axios";
 import useFetch from "../hooks/useFetch";
+import { toast } from "react-toastify";
 
 // Trạng thái các thiết bị
 const humidityTrend = Array.from({ length: 24 }, (_, hour) => ({
@@ -185,6 +186,7 @@ export default function Dashboard() {
         }
       );
 
+      toast.success(speed == "0" ? `Fan is turned off!` : `Fan is turned on with speed ${speed}!`)
       setFanOn(speed === "0" ? "Off" : "On");
       setFanSpeed(response.data.speed);
     } catch (error: any) {
@@ -209,6 +211,7 @@ export default function Dashboard() {
         }
       );
 
+      toast.success(status == "Open" ? "Door is opened!" : "Door is closed!")
       setDoorOpen(status);
     } catch (error: any) {
       console.log(error);
@@ -230,6 +233,7 @@ export default function Dashboard() {
         }
       );
 
+      toast.success(status == "On" ? "Light is on!" : "Light is off!")
       setLightOn(status);
     } catch (error: any) {
       console.log(error);
@@ -251,6 +255,7 @@ export default function Dashboard() {
         }
       );
 
+      toast.success(`Change color to ${color}!`)
       setLightColor(color);
     } catch (error: any) {
       console.log(error);
