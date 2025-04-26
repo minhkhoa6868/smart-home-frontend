@@ -60,10 +60,9 @@ export default function SecurityMode() {
         const alertData = JSON.parse(message.body);
 
         if (alertData.alert) {
-          alert(alertData.message);
-
           const alertSound = new Audio("/police-sirens-316719.mp3");
           alertSound.play().catch((err) => console.error("Sound play failed:", err));
+          alert(alertData.message);
         }
       });
     });
