@@ -55,12 +55,12 @@ export default function LightControlCard({
       <div className="mb-3 flex justify-center">
         <button
           onClick={() => onToggle(isOn === "On" ? "Off" : "On")}
-          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 ${
+          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 cursor-pointer ${
             isOn === "On" ? "bg-blue-500" : "bg-gray-300"
           }`}
         >
           <span
-            className={`inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300 ease-in-out ${
+            className={`inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300 ease-in-out cursor-pointer ${
               isOn === "On" ? "translate-x-5" : "translate-x-1"
             }`}
           />

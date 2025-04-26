@@ -105,12 +105,12 @@ export default function LightScheduleMode() {
         {/* Toggle */}
         <button
           onClick={handleToggle}
-          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 ${
+          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 cursor-pointer ${
             enabled ? "bg-green-500" : "bg-gray-300"
           }`}
         >
           <span
-            className={`inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300 ease-in-out ${
+            className={`inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300 ease-in-out cursor-pointer ${
               enabled ? "translate-x-5" : "translate-x-1"
             }`}
           />
@@ -127,7 +127,7 @@ export default function LightScheduleMode() {
             id="start-time"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           />
         </div>
 
@@ -140,7 +140,7 @@ export default function LightScheduleMode() {
             id="end-time"
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
           />
         </div>
       </div>

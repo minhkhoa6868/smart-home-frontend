@@ -22,7 +22,7 @@ export default function FanControlCard({
           <button
             key={s}
             onClick={() => onChangeSpeed(s)}
-            className={`w-8 h-8 rounded-full text-sm font-bold transition ${
+            className={`w-8 h-8 rounded-full text-sm font-bold transition cursor-pointer ${
               s === currentSpeed
                 ? "bg-blue-500 text-white shadow"
                 : "bg-gray-200 text-gray-700 hover:bg-blue-100"

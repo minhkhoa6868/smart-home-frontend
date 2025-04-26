@@ -345,7 +345,7 @@ export default function Dashboard() {
               <div className="flex justify-center items-center">
                 <button
                   onClick={() => setIsListening(!isListening)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-full transition ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full transition cursor-pointer ${
                     isListening
                       ? "bg-red-500 text-white"
                       : "bg-blue-500 text-white"
