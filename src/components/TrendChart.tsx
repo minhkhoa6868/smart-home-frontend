@@ -36,20 +36,22 @@ function handleTrendData(rawData: RawData[], valueKey: string): TrendPoint[] {
 export default function TrendChart({
   title,
   data,
+  valueKey,
 }: {
   title: string;
   data: RawData[];
+  valueKey: string; // <-- thêm valueKey
 }) {
   return (
-    <div className="bg-white rounded-xl shadow p-4 w-full h-full">
+    <div className="bg-white rounded-xl p-8 w-full h-[200px]">
       <div className="flex justify-between items-center mb-2">
         <p className="font-semibold">{title}</p>
         <span className="text-sm text-gray-500">Today</span>
       </div>
-      <ResponsiveContainer width="100%" height={100}>
-        <LineChart data={handleTrendData(data, title)}>
-          <XAxis dataKey="time" hide />
-          <YAxis hide />
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={handleTrendData(data, valueKey)}>
+          <XAxis dataKey="time" />
+          <YAxis />
           <Tooltip />
           <Line
             type="monotone"

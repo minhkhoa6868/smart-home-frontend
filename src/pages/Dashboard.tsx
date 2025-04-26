@@ -13,8 +13,17 @@ import SockJS from "sockjs-client";
 import { CompatClient, Stomp } from "@stomp/stompjs";
 import axios from "axios";
 import useFetch from "../hooks/useFetch";
+import { time, timeStamp } from "console";
 
 // Trạng thái các thiết bị
+const humidityTrend = Array.from({ length: 24 }, (_, hour) => ({
+  timestamp: `2025-04-24T${hour.toString().padStart(2, "0")}:00:00+07:00`,
+  humidity: Math.floor(Math.random() * 41) + 40, // Random từ 40 đến 80
+}));
+const temperatureTrend = Array.from({ length: 24 }, (_, hour) => ({
+  timestamp: `2025-04-24T${hour.toString().padStart(2, "0")}:00:00+07:00`,
+  temperature: Math.floor(Math.random() * 21) + 10, // Random từ 10 đến 30
+}));
 
 // src/pages/Dashboard.tsx
 export default function Dashboard() {
@@ -30,8 +39,10 @@ export default function Dashboard() {
   const [command, setCommand] = useState<string>("");
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
-  const [humidityTrend, setHumidityTrend] = useState([]);
-  const [temperatureTrend, setTemperatureTrend] = useState([]);
+  // const [humidityTrend, setHumidityTrend] = useState([]);
+  // const [temperatureTrend, setTemperatureTrend] = useState([]);
+
+  // mock data for trend
 
   console.log(lightOn, lightColor);
   useEffect(() => {
@@ -123,42 +134,42 @@ export default function Dashboard() {
     GetLatestLightCommand();
   }, [setFanSpeed, setLightColor]);
 
-  useEffect(() => {
-    const fetchHumidityData = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/records/humidity/today",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response.data);
-        setHumidityTrend(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    const fetchTemperatureData = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/records/temperature/today",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log(response.data);
-        setTemperatureTrend(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchHumidityData();
-    fetchTemperatureData();
-  }, [setHumidityTrend, setTemperatureTrend]);
+  // useEffect(() => {
+  //   const fetchHumidityData = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         "https://smart-home-backend-07op.onrender.com/api/records/humidity/today",
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+  //       console.log(response.data);
+  //       setHumidityTrend(response.data);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+  //   const fetchTemperatureData = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         "https://smart-home-backend-07op.onrender.com/api/records/temperature/today",
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+  //       console.log(response.data);
+  //       setTemperatureTrend(response.data);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
+  //   fetchHumidityData();
+  //   fetchTemperatureData();
+  // }, [setHumidityTrend, setTemperatureTrend]);
 
   const handleSpeed = async (speed: string) => {
     try {
@@ -392,9 +403,17 @@ export default function Dashboard() {
 
           {/* Trends */}
           <h1 className="text-xl font-semibold">Environmental Trends</h1>
-          <div className="grid grid-cols-2 gap-4">
-            <TrendChart title="Humidity" data={humidityTrend} />
-            <TrendChart title="Temperature" data={temperatureTrend} />
+          <div className="grid grid-cols-2 gap-4 ">
+            <TrendChart
+              title="Humidity"
+              data={humidityTrend}
+              valueKey="humidity"
+            />
+            <TrendChart
+              title="Temperature"
+              data={temperatureTrend}
+              valueKey="temperature"
+            />
           </div>
         </div>
       </div>
