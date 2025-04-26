@@ -6,7 +6,7 @@ import axios from "axios";
 
 type HistoryRecord = {
   label: string;
-  time: string;
+  timestamp: string; // Giữ timestamp gốc để dễ filter
   user: string;
   status: "on" | "off";
 };
@@ -16,10 +16,10 @@ const ITEMS_PER_PAGE = 12;
 export default function History() {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const formatTime = (timestamp: string): string => {
     const date = new Date(timestamp);
-
     return date.toLocaleString("vi-VN", {
       timeZone: "Asia/Ho_Chi_Minh",
       hour: "2-digit",
@@ -45,9 +45,17 @@ export default function History() {
 
       const data = response.data;
       console.log("History data:", data);
+
+      // Sort data mới nhất trước
+      data.sort((a: any, b: any) => {
+        return (
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+      });
+
       const formatted: HistoryRecord[] = data.map((item: any) => ({
         label: item.deviceName,
-        time: formatTime(item.timestamp),
+        timestamp: item.timestamp, // giữ nguyên timestamp gốc
         user: item.userName,
         status: item.status.toLowerCase() === "on" ? "on" : "off",
       }));
@@ -62,8 +70,16 @@ export default function History() {
     fetchHistory();
   }, []);
 
-  const totalPages = Math.ceil(history.length / ITEMS_PER_PAGE);
-  const paginatedHistory = history.slice(
+  // Filter theo ngày nếu có chọn
+  const filteredHistory = selectedDate
+    ? history.filter((item) => {
+        const itemDate = new Date(item.timestamp).toISOString().slice(0, 10); // 2025-04-26
+        return itemDate === selectedDate;
+      })
+    : history;
+
+  const totalPages = Math.ceil(filteredHistory.length / ITEMS_PER_PAGE);
+  const paginatedHistory = filteredHistory.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
@@ -76,6 +92,10 @@ export default function History() {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
+  const handleResetDate = () => {
+    setSelectedDate("");
+  };
+
   return (
     <div className="grid grid-cols-12 gap-8 min-h-screen p-6 bg-[#E8F3FC]">
       {/* Sidebar - Left */}
@@ -85,10 +105,40 @@ export default function History() {
 
       <div className="col-span-8">
         <h1 className="font-semibold text-2xl ml-2 mb-4">History</h1>
+
+        {/* Date Picker */}
+        <div className="flex items-center gap-4 mb-4">
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => {
+              setSelectedDate(e.target.value);
+              setCurrentPage(1); // Reset về page 1 khi chọn filter
+            }}
+            className="bg-white border rounded p-2"
+          />
+          {selectedDate && (
+            <button
+              onClick={handleResetDate}
+              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
         <div className="bg-white rounded-xl p-4 shadow">
           <div className="space-y-2">
             {paginatedHistory.length > 0 ? (
-              paginatedHistory.map((h, i) => <HistoryItem key={i} {...h} />)
+              paginatedHistory.map((h, i) => (
+                <HistoryItem
+                  key={i}
+                  label={h.label}
+                  time={formatTime(h.timestamp)} // chỉ format ở đây để hiển thị
+                  user={h.user}
+                  status={h.status}
+                />
+              ))
             ) : (
               <p className="text-gray-500">No history available.</p>
             )}

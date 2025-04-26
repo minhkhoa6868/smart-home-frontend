@@ -36,7 +36,6 @@ export default function LightScheduleMode() {
       } else {
         setEndTime("");
       }
-      
     } catch (error) {
       console.error("Error fetching security mode status:", error);
     }

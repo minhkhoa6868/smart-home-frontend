@@ -393,14 +393,8 @@ export default function Dashboard() {
           {/* Trends */}
           <h1 className="text-xl font-semibold">Environmental Trends</h1>
           <div className="grid grid-cols-2 gap-4">
-            <TrendChart
-              title="Humidity"
-              data={handleTrendData(humidityTrend, "humidity")}
-            />
-            <TrendChart
-              title="Temperature"
-              data={handleTrendData(temperatureTrend, "temperature")}
-            />
+            <TrendChart title="Humidity" data={humidityTrend} />
+            <TrendChart title="Temperature" data={temperatureTrend} />
           </div>
         </div>
       </div>
