@@ -13,7 +13,6 @@ import SockJS from "sockjs-client";
 import { CompatClient, Stomp } from "@stomp/stompjs";
 import axios from "axios";
 import useFetch from "../hooks/useFetch";
-import { time, timeStamp } from "console";
 
 // Trạng thái các thiết bị
 const humidityTrend = Array.from({ length: 24 }, (_, hour) => ({
@@ -97,42 +96,42 @@ export default function Dashboard() {
   useFetch("door", setDoorOpen);
   useFetch("led", setLightOn);
 
+  const GetLatestFanCommand = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/commands/fan/latest",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setFanSpeed(response.data.speed);
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
+  const GetLatestLightCommand = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/commands/light/latest",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setLightColor(response.data.color);
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
-    const GetLatestFanCommand = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/commands/fan/latest",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setFanSpeed(response.data.speed);
-      } catch (error: any) {
-        console.log(error);
-      }
-    };
-
-    const GetLatestLightCommand = async () => {
-      try {
-        const response = await axios.get(
-          "https://smart-home-backend-07op.onrender.com/api/commands/light/latest",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setLightColor(response.data.color);
-      } catch (error: any) {
-        console.log(error);
-      }
-    };
-
     GetLatestFanCommand();
     GetLatestLightCommand();
-  }, [setFanSpeed, setLightColor]);
+  }, []);
 
   // useEffect(() => {
   //   const fetchHumidityData = async () => {

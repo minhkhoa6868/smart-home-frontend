@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import formatToDatetimeLocal from "../utils/changeDateTime";
 import SockJS from "sockjs-client";
 import { CompatClient, Stomp } from "@stomp/stompjs";
+import { toast } from "react-toastify";
 
 export default function SecurityMode() {
   const [isOn, setOn] = useState(false);
@@ -22,7 +23,14 @@ export default function SecurityMode() {
         }
       );
 
-      setOn(response.data.isAutoMode);
+      if (response.data.startTime && response.data.endTime) {
+        setOn(true);
+      }
+
+      else {
+        setOn(false);
+      }
+
       if (response.data.startTime) {
         const formattedStart = formatToDatetimeLocal(response.data.startTime);
         setStartTime(formattedStart);
@@ -43,7 +51,7 @@ export default function SecurityMode() {
 
   useEffect(() => {
     fetchSecurityModeStatus();
-  }, [setOn, setStartTime, setEndTime]);
+  }, []);
 
   useEffect(() => {
     const socket = new SockJS(
@@ -60,9 +68,13 @@ export default function SecurityMode() {
         const alertData = JSON.parse(message.body);
 
         if (alertData.alert) {
-          const alertSound = new Audio("/police-sirens-316719.mp3");
-          alertSound.play().catch((err) => console.error("Sound play failed:", err));
-          alert(alertData.message);
+          toast.warning(alertData.message, { toastId: "security-alert" });
+
+          const sound = new Audio("/police-sirens-316719.mp3");
+          sound.preload = "auto";
+          sound.play().catch((error) => {
+            console.error("Failed to play sound:", error);
+          });
         }
       });
     });
@@ -80,7 +92,7 @@ export default function SecurityMode() {
     try {
       if (!isOn) {
         if (startTime == "" || endTime == "") {
-          alert("Please set start time and end time");
+          toast.error("Please set start time and end time");
           return;
         }
         const payload = {
@@ -98,7 +110,7 @@ export default function SecurityMode() {
           }
         );
 
-        alert(response.data.message);
+        toast.success(response.data.message, { toastId: "security-toggle" });
       } else {
         const response = await axios.post(
           "https://smart-home-backend-07op.onrender.com/api/commands/security-mode/off",
@@ -110,12 +122,12 @@ export default function SecurityMode() {
           }
         );
 
-        alert(response.data.message);
+        toast.success(response.data.message, { toastId: "security-toggle" });
         setStartTime("");
         setEndTime("");
       }
 
-      setOn((prev) => !prev);
+      fetchSecurityModeStatus();
     } catch (error: any) {
       console.error("Error toggling security mode:", error);
     }

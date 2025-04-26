@@ -115,7 +115,7 @@ export default function History() {
               setSelectedDate(e.target.value);
               setCurrentPage(1); // Reset về page 1 khi chọn filter
             }}
-            className="bg-white border rounded p-2"
+            className="bg-white rounded-[10px] shadow p-2"
           />
           {selectedDate && (
             <button

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Info } from "lucide-react";
 import formatToDatetimeLocal from "../utils/changeDateTime";
+import { toast } from "react-toastify";
 
 export default function LightScheduleMode() {
   const [enabled, setEnabled] = useState(false);
@@ -20,9 +21,14 @@ export default function LightScheduleMode() {
         }
       );
 
-      console.log(response.data);
+      if (response.data.startTime && response.data.endTime) {
+        setEnabled(true);
+      }
 
-      setEnabled(response.data.isAutoMode);
+      else {
+        setEnabled(false);
+      }
+
       if (response.data.startTime) {
         const formattedStart = formatToDatetimeLocal(response.data.startTime);
         setStartTime(formattedStart);
@@ -43,14 +49,14 @@ export default function LightScheduleMode() {
 
   useEffect(() => {
     fetchLightModeStatus();
-  }, [setEnabled, setStartTime, setEndTime]);
+  }, []);
 
   const handleToggle = async () => {
     try {
       if (!enabled) {
         // Bật chế độ auto
         if (startTime == "" || endTime == "") {
-          alert("Please set start time and end time");
+          toast.error("Please set start time and end time");
           return;
         }
         const payload = {
@@ -67,7 +73,7 @@ export default function LightScheduleMode() {
           }
         );
 
-        alert(response.data.message);
+        toast.success(response.data.message);
       } else {
         // Tắt chế độ auto
         const response = await axios.post(
@@ -80,12 +86,12 @@ export default function LightScheduleMode() {
           }
         );
 
-        alert(response.data.message);
+        toast.success(response.data.message);
         setStartTime("");
         setEndTime("");
       }
 
-      setEnabled((prev) => !prev);
+      fetchLightModeStatus();
     } catch (error) {
       console.error("Error toggling auto mode:", error);
     }
