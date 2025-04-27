@@ -72,9 +72,7 @@ export default function SecurityMode() {
 
           const sound = new Audio("/police-sirens-316719.mp3");
           sound.preload = "auto";
-          sound.play().catch((error) => {
-            console.error("Failed to play sound:", error);
-          });
+          sound.play();
         }
       });
     });

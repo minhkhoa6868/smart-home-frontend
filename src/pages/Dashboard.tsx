@@ -12,7 +12,6 @@ import { Mic, MicOff } from "lucide-react";
 import SockJS from "sockjs-client";
 import { CompatClient, Stomp } from "@stomp/stompjs";
 import axios from "axios";
-import useFetch from "../hooks/useFetch";
 import { toast } from "react-toastify";
 
 // Trạng thái các thiết bị
@@ -31,20 +30,20 @@ export default function Dashboard() {
   const [fanSpeed, setFanSpeed] = useState("0");
   const [fanOn, setFanOn] = useState("Off");
   const [lightOn, setLightOn] = useState<string>("Off");
-  const [lightColor, setLightColor] = useState<string>("#fffff"); // default: white
   const [humidity, setHumidity] = useState(0);
   const [temperature, setTemperature] = useState(0);
-  // const [brightness, setBrightness] = useState(0);
-  // const [distance, setDistance] = useState(0);
   const [command, setCommand] = useState<string>("");
+  const [lastCommand, setLastCommand] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("userId");
+  // const [brightness, setBrightness] = useState(0);
+  // const [distance, setDistance] = useState(0);
   // const [humidityTrend, setHumidityTrend] = useState([]);
   // const [temperatureTrend, setTemperatureTrend] = useState([]);
 
   // mock data for trend
 
-  console.log(lightOn, lightColor);
   useEffect(() => {
     const socket = new SockJS(
       `https://smart-home-backend-07op.onrender.com/ws?Authorization=${encodeURIComponent(
@@ -92,11 +91,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  // fetch api for fan device
-  useFetch("fan", setFanOn);
-  useFetch("door", setDoorOpen);
-  useFetch("led", setLightOn);
-
   const GetLatestFanCommand = async () => {
     try {
       const response = await axios.get(
@@ -113,25 +107,8 @@ export default function Dashboard() {
     }
   };
 
-  const GetLatestLightCommand = async () => {
-    try {
-      const response = await axios.get(
-        "https://smart-home-backend-07op.onrender.com/api/commands/light/latest",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setLightColor(response.data.color);
-    } catch (error: any) {
-      console.log(error);
-    }
-  };
-
   useEffect(() => {
     GetLatestFanCommand();
-    GetLatestLightCommand();
   }, []);
 
   // useEffect(() => {
@@ -186,7 +163,11 @@ export default function Dashboard() {
         }
       );
 
-      toast.success(speed == "0" ? `Fan is turned off!` : `Fan is turned on with speed ${speed}!`)
+      toast.success(
+        speed == "0"
+          ? `Fan is turned off!`
+          : `Fan is turned on with speed ${speed}!`
+      );
       setFanOn(speed === "0" ? "Off" : "On");
       setFanSpeed(response.data.speed);
     } catch (error: any) {
@@ -211,7 +192,7 @@ export default function Dashboard() {
         }
       );
 
-      toast.success(status == "Open" ? "Door is opened!" : "Door is closed!")
+      toast.success(status == "Open" ? "Door is opened!" : "Door is closed!");
       setDoorOpen(status);
     } catch (error: any) {
       console.log(error);
@@ -233,37 +214,18 @@ export default function Dashboard() {
         }
       );
 
-      toast.success(status == "On" ? "Light is on!" : "Light is off!")
+      toast.success(status == "On" ? "Light is on!" : "Light is off!");
       setLightOn(status);
     } catch (error: any) {
       console.log(error);
     }
   };
 
-  const handleLightColorChange = async (color: string) => {
-    try {
-      await axios.post(
-        "https://smart-home-backend-07op.onrender.com/api/commands/light/color",
-        {
-          color: color,
-          userId: userId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      toast.success(`Change color to ${color}!`)
-      setLightColor(color);
-    } catch (error: any) {
-      console.log(error);
-    }
-  };
-  const [isListening, setIsListening] = useState(false);
-
   const handleCommand = (command: string) => {
+    if (command === lastCommand) {
+      return;
+    }
+
     switch (command) {
       // Light
       case "LightOn":
@@ -299,6 +261,7 @@ export default function Dashboard() {
         console.log("Unknown voice command:", command);
         break;
     }
+    setLastCommand(command);
   };
 
   return (
@@ -334,22 +297,22 @@ export default function Dashboard() {
           {/* Devices */}
           <h1 className="text-xl font-semibold">Devices</h1>
           <div className="grid grid-cols-4 gap-4">
-            {lightOn && lightColor && (
-              <LightControlCard
-                isOn={lightOn}
-                color={lightColor}
-                onToggle={(status) => handleLightOn(status)}
-                onColorChange={(hex) => handleLightColorChange(hex)}
-              />
-            )}
+            <LightControlCard
+              token={token}
+              userId={userId}
+              isOn={lightOn}
+              setIsOn={setLightOn}
+            />
 
             <DoorControlCard
               isOpen={doorOpen}
+              setIsOpen={setDoorOpen}
               onToggle={(status) => handleDoorOpen(status)}
             />
 
             <FanControlCard
               isOn={fanOn}
+              setIsOn={setFanOn}
               currentSpeed={fanSpeed}
               onChangeSpeed={(speed) => handleSpeed(speed)}
             />

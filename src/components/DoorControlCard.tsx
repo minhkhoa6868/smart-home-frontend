@@ -1,12 +1,18 @@
 import { DoorOpen, DoorClosed } from "lucide-react"; // Nếu bạn cài `lucide-react`
+import useFetch from "../hooks/useFetch";
 
 export default function DoorControlCard({
   isOpen,
+  setIsOpen,
   onToggle,
 }: {
   isOpen: string;
+  setIsOpen: (status: string) => void;
   onToggle: (status: string) => void;
 }) {
+
+  useFetch("door", setIsOpen);
+
   return (
     <div className="bg-white rounded-xl p-4 shadow w-[180px] text-center transition-all">
       <p className="text-sm text-gray-500 mb-1">{isOpen == "Open" ? "Open" : "Closed"}</p>

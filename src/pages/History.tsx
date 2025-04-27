@@ -44,20 +44,13 @@ export default function History() {
       );
 
       const data = response.data;
-      console.log("History data:", data);
-
-      // Sort data mới nhất trước
-      data.sort((a: any, b: any) => {
-        return (
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-      });
 
       const formatted: HistoryRecord[] = data.map((item: any) => ({
         label: item.deviceName,
         timestamp: item.timestamp, // giữ nguyên timestamp gốc
         user: item.userName,
-        status: item.status.toLowerCase() === "on" ? "on" : "off",
+        status: (item.status === "On" || item.status === "Open") ? "on" : 
+          (item.status === "Off" || item.status === "Close") ? "off" : item.status,
       }));
 
       setHistory(formatted);
@@ -70,11 +63,20 @@ export default function History() {
     fetchHistory();
   }, []);
 
+  const normalizeDate = (date: string) => {
+    const [year, month, day] = date.split('-');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  };
+
   // Filter theo ngày nếu có chọn
   const filteredHistory = selectedDate
     ? history.filter((item) => {
-        const itemDate = new Date(item.timestamp).toISOString().slice(0, 10); // 2025-04-26
-        return itemDate === selectedDate;
+        const itemDate = new Date(item.timestamp).toLocaleDateString("vi-VN", {
+          timeZone: "Asia/Ho_Chi_Minh",
+        });
+        const formattedItemDate = itemDate.split('/').reverse().join('-');
+        const normalizedItemDate = normalizeDate(formattedItemDate);
+        return normalizedItemDate === selectedDate;
       })
     : history;
 
@@ -115,12 +117,12 @@ export default function History() {
               setSelectedDate(e.target.value);
               setCurrentPage(1); // Reset về page 1 khi chọn filter
             }}
-            className="bg-white rounded-[10px] shadow p-2"
+            className="bg-white rounded-[10px] shadow p-2 cursor-pointer"
           />
           {selectedDate && (
             <button
               onClick={handleResetDate}
-              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+              className="px-4 py-2 bg-gray-200 rounded cursor-pointer hover:bg-gray-300"
             >
               Clear
             </button>

@@ -1,31 +1,95 @@
 import { useEffect, useState } from "react";
 import { Lightbulb } from "lucide-react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function LightControlCard({
+  token,
+  userId,
   isOn,
-  color,
-  onToggle,
-  onColorChange,
+  setIsOn,
 }: {
+  token: string | null;
+  userId: string | null;
   isOn: string;
-  color: string;
-  onToggle: (status: string) => void;
-  onColorChange: (newColor: string) => void;
+  setIsOn: (status: string) => void;
 }) {
-  const [selectedColor, setSelectedColor] = useState(color);
+  const [color, setColor] = useState("#ffffff");
+  const [selectedColor, setSelectedColor] = useState("#ffffff");
+
+  useEffect(() => {
+    fetchLed();
+  }, []);
 
   useEffect(() => {
     const isValidColor = /^#[0-9A-Fa-f]{6}$/.test(color);
     setSelectedColor(isValidColor ? color : "#ffffff");
-    console.log();
   }, [color]);
+
+  const fetchLed = async () => {
+    try {
+      const response = await axios.get(
+        "https://smart-home-backend-07op.onrender.com/api/device/led",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setIsOn(response.data.status);
+      setColor(response.data.color);
+    } catch (err: any) {
+      console.log(err);
+    }
+  };
+
+  const handleToggle = async () => {
+    const newStatus = isOn === "On" ? "Off" : "On";
+    try {
+      await axios.post(
+        "https://smart-home-backend-07op.onrender.com/api/commands/light/status",
+        {
+          status: newStatus,
+          userId: userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success(newStatus === "On" ? "Light is on!" : "Light is off!");
+      setIsOn(newStatus);
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedColor(e.target.value);
   };
 
-  const handleSubmitColor = () => {
-    onColorChange(selectedColor);
+  const handleSubmitColor = async () => {
+    try {
+      await axios.post(
+        "https://smart-home-backend-07op.onrender.com/api/commands/light/color",
+        {
+          color: selectedColor,
+          userId: userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      toast.success(`Changed color to ${selectedColor}!`);
+      setColor(selectedColor);
+    } catch (error: any) {
+      console.log(error);
+    }
   };
 
   return (
@@ -43,7 +107,7 @@ export default function LightControlCard({
           className={`transition duration-300 ${
             isOn === "On"
               ? selectedColor.toLowerCase() === "#ffffff"
-                ? "text-gray-600" // đổi thành xám nếu nền trắng
+                ? "text-gray-600"
                 : "text-white"
               : "text-gray-400"
           }`}
@@ -54,7 +118,7 @@ export default function LightControlCard({
 
       <div className="mb-3 flex justify-center">
         <button
-          onClick={() => onToggle(isOn === "On" ? "Off" : "On")}
+          onClick={handleToggle}
           className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 cursor-pointer ${
             isOn === "On" ? "bg-blue-500" : "bg-gray-300"
           }`}
@@ -67,7 +131,6 @@ export default function LightControlCard({
         </button>
       </div>
 
-      {/* Color picker + OK button (only show when color changed) */}
       <div className="flex items-center gap-2 justify-center">
         <input
           type="color"

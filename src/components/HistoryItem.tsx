@@ -9,7 +9,7 @@ export default memo(function HistoryItem({
   label: string;
   time: string;
   user: string;
-  status: "on" | "off";
+  status: "on" | "off" | "open" | "close";
 }) {
   const color = status === "on" ? "green" : status === "off" ? "red" : "gray";
 

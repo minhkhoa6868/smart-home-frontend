@@ -1,15 +1,20 @@
 import { Wind } from "lucide-react";
+import useFetch from "../hooks/useFetch";
 
 export default function FanControlCard({
   isOn,
+  setIsOn,
   currentSpeed,
   onChangeSpeed,
 }: {
   isOn: string;
+  setIsOn: (status: string) => void;
   currentSpeed: string;
   onChangeSpeed: (s: string) => void;
 }) {
   const speeds = ["0", "1", "2", "3"];
+
+  useFetch("fan", setIsOn);
 
   return (
     <div className="bg-white rounded-xl p-4 shadow w-[180px] text-center transition-all">
