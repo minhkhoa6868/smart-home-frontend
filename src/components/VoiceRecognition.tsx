@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from "react-speech-recognition";
 
 // Define props type
 interface VoiceRecognitionProps {
@@ -16,16 +19,13 @@ const VoiceRecognition: React.FC<VoiceRecognitionProps> = ({
   isListening,
   onCommand,
 }) => {
-  const [transcript, setTranscript] = useState<string>("");
+  const [myTranscript, setMyTranscript] = useState<string>("");
   const [scheduledCommands, setScheduledCommands] = useState<
     CommandWithTimestamp[]
   >([]);
 
-  // Store the recognition instance in a ref to persist across renders (avoiding re-initialization)
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-
-  // Define a list of possible commands that the app will recognize
-  const commandMappings = useRef([
+  // Command list
+  const commandMappings = [
     { command: "turn on the light", action: "LightOn" },
     { command: "turn off the light", action: "LightOff" },
     { command: "open the door", action: "DoorOpen" },
@@ -35,7 +35,10 @@ const VoiceRecognition: React.FC<VoiceRecognitionProps> = ({
     { command: "turn on the fan high", action: "FanHigh" },
     { command: "turn off the fan", action: "FanOff" },
     { command: "clear", action: "Clear" },
-  ]);
+  ];
+
+  // SpeechRecognition hook
+  const { finalTranscript, resetTranscript } = useSpeechRecognition();
 
   // Function to parse time from the command transcript
   const parseTime = (currentTranscript: string): number => {
@@ -79,7 +82,7 @@ const VoiceRecognition: React.FC<VoiceRecognitionProps> = ({
 
   // Function to handle matching the command and executing corresponding actions
   const matchCommand = (currentTranscript: string) => {
-    for (let { command, action } of commandMappings.current) {
+    for (let { command, action } of commandMappings) {
       if (currentTranscript.toLowerCase().includes(command)) {
         if (command === "clear") {
           console.log("Clearing scheduled commands.");
@@ -112,8 +115,6 @@ const VoiceRecognition: React.FC<VoiceRecognitionProps> = ({
     const intervalId = setInterval(() => {
       const now = Date.now();
 
-      // console.log("Scheduled Commands:", scheduledCommands);
-
       const commandsToExecute = scheduledCommands.filter(
         (command) => command.timestamp <= now
       );
@@ -133,50 +134,35 @@ const VoiceRecognition: React.FC<VoiceRecognitionProps> = ({
     return () => clearInterval(intervalId);
   }, [scheduledCommands, onCommand]);
 
-  // Initialize speech recognition and handle the voice commands
+  // Start/stop speech recognition based on isListening prop
   useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      console.log("Your browser does not support speech recognition.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-
-    recognitionRef.current = recognition;
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let currentTranscript =
-        event.results[event.results.length - 1][0].transcript;
-      setTranscript(currentTranscript);
-      handleCommand(currentTranscript);
-    };
-
-    recognition.onerror = (event: SpeechRecognitionError) => {
-      console.error("Speech recognition error", event.error);
-    };
-
     if (isListening) {
-      recognition.start();
+      SpeechRecognition.startListening({
+        continuous: true,
+        interimResults: false,
+      });
+    } else {
+      SpeechRecognition.stopListening();
     }
 
-    // Cleanup on unmount
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
+      SpeechRecognition.stopListening();
     };
-  }, [isListening, onCommand]);
+  }, [isListening]);
+
+  // If finalTranscript updates, process command
+  useEffect(() => {
+    if (finalTranscript) {
+      setMyTranscript(finalTranscript);
+      handleCommand(finalTranscript);
+      resetTranscript(); // Optionally reset the transcript after processing
+    }
+  }, [finalTranscript, handleCommand, resetTranscript]);
 
   return (
     <div>
       <h2>Your Speech:</h2>
-      <p>{transcript}</p>
+      <p>{myTranscript}</p>
     </div>
   );
 };

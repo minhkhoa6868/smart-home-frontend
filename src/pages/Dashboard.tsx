@@ -359,7 +359,6 @@ export default function Dashboard() {
 
               <VoiceRecognition
                 isListening={isListening}
-                toggleListening={() => setIsListening(!isListening)}
                 onCommand={(cmd) => {
                   handleCommand(cmd);
                   setCommand(cmd);
