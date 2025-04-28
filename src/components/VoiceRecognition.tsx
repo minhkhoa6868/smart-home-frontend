@@ -1,144 +1,168 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 // Define props type
 interface VoiceRecognitionProps {
   isListening: boolean;
-  toggleListening: () => void;
-  onCommand: (command: string) => void; // Callback function to handle the command
+  onCommand: (command: string) => void;
+}
+
+// Command structure
+interface CommandWithTimestamp {
+  action: string;
+  timestamp: number;
 }
 
 const VoiceRecognition: React.FC<VoiceRecognitionProps> = ({
   isListening,
-  toggleListening,
   onCommand,
 }) => {
   const [transcript, setTranscript] = useState<string>("");
+  const [scheduledCommands, setScheduledCommands] = useState<
+    CommandWithTimestamp[]
+  >([]);
 
-  // Store the recognition instance in a ref to persist across renders
+  // Store the recognition instance in a ref to persist across renders (avoiding re-initialization)
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
+  // Define a list of possible commands that the app will recognize
+  const commandMappings = useRef([
+    { command: "turn on the light", action: "LightOn" },
+    { command: "turn off the light", action: "LightOff" },
+    { command: "open the door", action: "DoorOpen" },
+    { command: "close the door", action: "DoorClose" },
+    { command: "turn on the fan low", action: "FanLow" },
+    { command: "turn on the fan medium", action: "FanMedium" },
+    { command: "turn on the fan high", action: "FanHigh" },
+    { command: "turn off the fan", action: "FanOff" },
+    { command: "clear", action: "Clear" },
+  ]);
+
+  // Function to parse time from the command transcript
+  const parseTime = (currentTranscript: string): number => {
+    let delayInMs = 0;
+
+    // Match for exact time in HH:mm format (e.g., "at 14:30")
+    const timeMatch = currentTranscript.match(/at\s*(\d{1,2}):(\d{2})/);
+    if (timeMatch) {
+      const [_, hours, minutes] = timeMatch;
+      const now = new Date();
+      const targetTime = new Date(now);
+      targetTime.setHours(parseInt(hours), parseInt(minutes), 0);
+
+      delayInMs = targetTime.getTime() - now.getTime();
+
+      // If the target time has already passed, schedule it for the next day
+      if (delayInMs < 0) {
+        delayInMs += 24 * 60 * 60 * 1000;
+      }
+    } else {
+      // Match for relative times like "10 seconds", "5 minutes", or "2 hours"
+      const relativeTimeMatch = currentTranscript.match(
+        /(\d+)\s*(seconds?|minutes?|hours?)/
+      );
+      if (relativeTimeMatch) {
+        const amount = parseInt(relativeTimeMatch[1], 10);
+        const unit = relativeTimeMatch[2].toLowerCase();
+
+        if (unit.includes("second")) {
+          delayInMs = amount * 1000; // Convert seconds to milliseconds
+        } else if (unit.includes("minute")) {
+          delayInMs = amount * 60 * 1000; // Convert minutes to milliseconds
+        } else if (unit.includes("hour")) {
+          delayInMs = amount * 60 * 60 * 1000; // Convert hours to milliseconds
+        }
+      }
+    }
+
+    return delayInMs;
+  };
+
+  // Function to handle matching the command and executing corresponding actions
+  const matchCommand = (currentTranscript: string) => {
+    for (let { command, action } of commandMappings.current) {
+      if (currentTranscript.toLowerCase().includes(command)) {
+        if (command === "clear") {
+          console.log("Clearing scheduled commands.");
+          setScheduledCommands([]); // Reset scheduled commands
+          return;
+        }
+
+        const delayInMs = parseTime(currentTranscript); // Get the delay based on the transcript
+
+        // Store the action and its timestamp
+        const newCommand = {
+          action,
+          timestamp: Date.now() + delayInMs,
+        };
+
+        setScheduledCommands((prevCommands) => [...prevCommands, newCommand]);
+        console.log(`Scheduled action: ${action} at ${newCommand.timestamp}`);
+        break;
+      }
+    }
+  };
+
+  // Memoize the command handler to avoid unnecessary re-renders
+  const handleCommand = useCallback((currentTranscript: string) => {
+    matchCommand(currentTranscript);
+  }, []);
+
+  // Function to check and execute commands at their scheduled times
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+
+      // console.log("Scheduled Commands:", scheduledCommands);
+
+      const commandsToExecute = scheduledCommands.filter(
+        (command) => command.timestamp <= now
+      );
+
+      // Execute commands that are ready to run
+      commandsToExecute.forEach((command) => {
+        console.log(`Executing action: ${command.action}`);
+        onCommand(command.action);
+      });
+
+      // Remove executed commands from the list
+      setScheduledCommands((prevCommands) =>
+        prevCommands.filter((command) => command.timestamp > now)
+      );
+    }, 1000); // Check every second
+
+    return () => clearInterval(intervalId);
+  }, [scheduledCommands, onCommand]);
+
+  // Initialize speech recognition and handle the voice commands
   useEffect(() => {
     const SpeechRecognition =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
     if (!SpeechRecognition) {
       console.log("Your browser does not support speech recognition.");
       return;
     }
 
-    // Initialize SpeechRecognition instance
     const recognition = new SpeechRecognition();
-    recognition.continuous = true; // Ensures continuous listening
-    recognition.interimResults = true; // Allow interim results (while speaking)
-    recognition.lang = "en-US"; // Optional: Set the language for recognition
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
 
-    // Save recognition instance in the ref
     recognitionRef.current = recognition;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let currentTranscript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        currentTranscript += event.results[i][0].transcript;
-      }
+      let currentTranscript =
+        event.results[event.results.length - 1][0].transcript;
       setTranscript(currentTranscript);
-
-      // Check the transcript for commands
-      if (
-        currentTranscript.toLowerCase().includes("turn off the light") ||
-        currentTranscript.toLowerCase().includes("switch off the light") ||
-        currentTranscript.toLowerCase().includes("lights off") ||
-        currentTranscript.toLowerCase().includes("turn the light off") ||
-        currentTranscript.toLowerCase().includes("off the light") ||
-        currentTranscript.toLowerCase().includes("light off")
-      ) {
-        onCommand("LightOff");
-      } else if (
-        currentTranscript.toLowerCase().includes("turn on the light") ||
-        currentTranscript.toLowerCase().includes("switch on the light") ||
-        currentTranscript.toLowerCase().includes("lights on") ||
-        currentTranscript.toLowerCase().includes("turn the light on") ||
-        currentTranscript.toLowerCase().includes("on the light") ||
-        currentTranscript.toLowerCase().includes("light on")
-      ) {
-        onCommand("LightOn");
-      } else if (
-        currentTranscript.toLowerCase().includes("close the door") ||
-        currentTranscript.toLowerCase().includes("shut the door") ||
-        currentTranscript.toLowerCase().includes("door close") ||
-        currentTranscript.toLowerCase().includes("close the door please") ||
-        currentTranscript.toLowerCase().includes("door shut")
-      ) {
-        onCommand("DoorClose");
-      } else if (
-        currentTranscript.toLowerCase().includes("open the door") ||
-        currentTranscript.toLowerCase().includes("open up the door") ||
-        currentTranscript.toLowerCase().includes("door open") ||
-        currentTranscript.toLowerCase().includes("please open the door") ||
-        currentTranscript.toLowerCase().includes("open the door please")
-      ) {
-        onCommand("DoorOpen");
-      } else if (
-        currentTranscript.toLowerCase().includes("turn off the fan") ||
-        currentTranscript.toLowerCase().includes("switch off the fan") ||
-        currentTranscript.toLowerCase().includes("fan off") ||
-        currentTranscript.toLowerCase().includes("turn the fan off") ||
-        currentTranscript.toLowerCase().includes("off the fan") ||
-        currentTranscript.toLowerCase().includes("fan stop")
-      ) {
-        onCommand("FanOff");
-      } else if (
-        currentTranscript.toLowerCase().includes("turn on the fan") ||
-        currentTranscript.toLowerCase().includes("switch on the fan") ||
-        currentTranscript.toLowerCase().includes("turn the fan on") ||
-        currentTranscript.toLowerCase().includes("activate fan") ||
-        currentTranscript.toLowerCase().includes("turn on the fan low") ||
-        currentTranscript.toLowerCase().includes("switch on the fan low") ||
-        currentTranscript.toLowerCase().includes("fan low") ||
-        currentTranscript.toLowerCase().includes("turn the fan on low") ||
-        currentTranscript.toLowerCase().includes("low speed fan") ||
-        currentTranscript.toLowerCase().includes("set fan to low") ||
-        currentTranscript.toLowerCase().includes("activate fan low")
-      ) {
-        onCommand("FanLow");
-      } else if (
-        currentTranscript.toLowerCase().includes("turn on the fan medium") ||
-        currentTranscript.toLowerCase().includes("switch on the fan medium") ||
-        currentTranscript.toLowerCase().includes("fan medium") ||
-        currentTranscript.toLowerCase().includes("turn the fan on medium") ||
-        currentTranscript.toLowerCase().includes("medium speed fan") ||
-        currentTranscript.toLowerCase().includes("set fan to medium") ||
-        currentTranscript.toLowerCase().includes("activate fan medium")
-      ) {
-        onCommand("FanMedium");
-      } else if (
-        currentTranscript.toLowerCase().includes("turn on the fan high") ||
-        currentTranscript.toLowerCase().includes("switch on the fan high") ||
-        currentTranscript.toLowerCase().includes("fan high") ||
-        currentTranscript.toLowerCase().includes("turn the fan on high") ||
-        currentTranscript.toLowerCase().includes("high speed fan") ||
-        currentTranscript.toLowerCase().includes("set fan to high") ||
-        currentTranscript.toLowerCase().includes("activate fan high")
-      ) {
-        onCommand("FanHigh");
-      } else if (
-        currentTranscript
-          .toLowerCase()
-          .includes("turn off the fan completely") ||
-        currentTranscript.toLowerCase().includes("stop the fan") ||
-        currentTranscript.toLowerCase().includes("fan off completely") ||
-        currentTranscript.toLowerCase().includes("turn off all fans") ||
-        currentTranscript.toLowerCase().includes("power off the fan")
-      ) {
-        onCommand("FanOff");
-      }
+      handleCommand(currentTranscript);
     };
 
     recognition.onerror = (event: SpeechRecognitionError) => {
       console.error("Speech recognition error", event.error);
     };
 
-    // Start recognition only when isListening is true
     if (isListening) {
-      recognition.start(); // Start listening
+      recognition.start();
     }
 
     // Cleanup on unmount

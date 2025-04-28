@@ -20,8 +20,8 @@ export default function Signup() {
       const response = await axios.post(
         "https://smart-home-backend-07op.onrender.com/auth/signup",
         {
-          username,
-          password,
+          username: username,
+          password: password,
         }
       );
 
@@ -39,7 +39,7 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-blue-50 flex flex-col items-center justify-center space-y-6">
       <h1 className="text-3xl font-bold text-blue-600 tracking-wide">
-        CREAT NEW ACCOUNT
+        CREATE NEW ACCOUNT
       </h1>
 
       <form
