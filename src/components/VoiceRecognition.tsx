@@ -140,6 +140,7 @@ const VoiceRecognition: React.FC<VoiceRecognitionProps> = ({
       SpeechRecognition.startListening({
         continuous: true,
         interimResults: false,
+        language: "en-US", // Set the language to Englishs
       });
     } else {
       SpeechRecognition.stopListening();

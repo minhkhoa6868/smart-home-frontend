@@ -19,7 +19,7 @@ export default function RightPanel() {
 
   const fetchMembers = async () => {
     try {
-      const response = await axios.get(`https://smart-home-backend-07op.onrender.com/api/user/${userId}/members`, 
+      const response = await axios.get(`http://localhost:8080/api/user/${userId}/members`, 
         {
           headers: {
             Authorization: `Bearer ${token}`,

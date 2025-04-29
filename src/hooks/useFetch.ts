@@ -8,7 +8,7 @@ const useFetch = (deviceId: string, setDeviceState: (state: any) => void) => {
     const fetchDeviceData = async () => {
       try {
         const response = await axios.get(
-          `https://smart-home-backend-07op.onrender.com/api/device/${deviceId}`,
+          `http://localhost:8080/api/device/${deviceId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

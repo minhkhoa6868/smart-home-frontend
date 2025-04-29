@@ -13,7 +13,7 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        "https://smart-home-backend-07op.onrender.com/auth/login",
+        "http://localhost:8080/auth/login",
         {
           username,
           password,

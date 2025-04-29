@@ -13,6 +13,7 @@ import SockJS from "sockjs-client";
 import { CompatClient, Stomp } from "@stomp/stompjs";
 import axios from "axios";
 import { toast } from "react-toastify";
+import PowerConsumptionCard from "../components/PowerConsumptionCard";
 
 // Trạng thái các thiết bị
 const humidityTrend = Array.from({ length: 24 }, (_, hour) => ({
@@ -32,6 +33,7 @@ export default function Dashboard() {
   const [lightOn, setLightOn] = useState<string>("Off");
   const [humidity, setHumidity] = useState(0);
   const [temperature, setTemperature] = useState(0);
+  const [powerConsumption, setPowerConsumption] = useState(0);
   const [command, setCommand] = useState<string>("");
   const [lastCommand, setLastCommand] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
@@ -46,7 +48,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const socket = new SockJS(
-      `https://smart-home-backend-07op.onrender.com/ws?Authorization=${encodeURIComponent(
+      `http://localhost:8080/ws?Authorization=${encodeURIComponent(
         `Bearer ${token}`
       )}`
     );
@@ -72,6 +74,11 @@ export default function Dashboard() {
           setTemperature(data.temperature);
         });
 
+        stompClient.subscribe("/topic/power", (message) => {
+          const data = JSON.parse(message.body);
+          setPowerConsumption(data.power);
+        });
+
         // stompClient.subscribe("/topic/light", (message) => {
         //   const data = JSON.parse(message.body);
         //   setBrightness(data.brightness);
@@ -94,7 +101,7 @@ export default function Dashboard() {
   const GetLatestFanCommand = async () => {
     try {
       const response = await axios.get(
-        "https://smart-home-backend-07op.onrender.com/api/commands/fan/latest",
+        "http://localhost:8080/api/commands/fan/latest",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -108,6 +115,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    console.log(powerConsumption);
     GetLatestFanCommand();
   }, []);
 
@@ -151,7 +159,7 @@ export default function Dashboard() {
   const handleSpeed = async (speed: string) => {
     try {
       const response = await axios.post(
-        "https://smart-home-backend-07op.onrender.com/api/commands/fan",
+        "http://localhost:8080/api/commands/fan",
         {
           speed: speed,
           userId: userId,
@@ -180,7 +188,7 @@ export default function Dashboard() {
       const num: string = status == "Open" ? "1" : "0";
 
       await axios.post(
-        "https://smart-home-backend-07op.onrender.com/api/commands/door",
+        "http://localhost:8080/api/commands/door",
         {
           status: num,
           userId: userId,
@@ -202,7 +210,7 @@ export default function Dashboard() {
   const handleLightOn = async (status: string) => {
     try {
       await axios.post(
-        "https://smart-home-backend-07op.onrender.com/api/commands/light/status",
+        "http://localhost:8080/api/commands/light/status",
         {
           status: status,
           userId: userId,
@@ -291,6 +299,11 @@ export default function Dashboard() {
               threshold_upper={33}
               threshold_lower={10}
               unit="*C"
+            />
+
+            <PowerConsumptionCard 
+              powerConsumption={powerConsumption}
+              powerConsumptionUnit="KWh"
             />
           </div>
 

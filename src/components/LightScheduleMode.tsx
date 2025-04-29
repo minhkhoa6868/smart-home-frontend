@@ -13,7 +13,7 @@ export default function LightScheduleMode() {
   const fetchLightModeStatus = async () => {
     try {
       const response = await axios.get(
-        "https://smart-home-backend-07op.onrender.com/api/device/LED-1/auto-mode",
+        "http://localhost:8080/api/device/LED-1/auto-mode",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -64,7 +64,7 @@ export default function LightScheduleMode() {
           endTime: new Date(endTime).toISOString(),
         };
         const response = await axios.post(
-          "https://smart-home-backend-07op.onrender.com/api/commands/light/auto-mode/on",
+          "http://localhost:8080/api/commands/light/auto-mode/on",
           payload,
           {
             headers: {
@@ -77,7 +77,7 @@ export default function LightScheduleMode() {
       } else {
         // Tắt chế độ auto
         const response = await axios.post(
-          "https://smart-home-backend-07op.onrender.com/api/commands/light/auto-mode/off",
+          "http://localhost:8080/api/commands/light/auto-mode/off",
           {},
           {
             headers: {
@@ -101,7 +101,7 @@ export default function LightScheduleMode() {
     <div className="bg-white rounded-xl w-full p-8 space-y-4">
       <div className="flex justify-between items-center">
         <p className="text-lg font-medium flex items-center gap-2">
-          Light Schedule Mode
+          Light Power Saving Mode
           <span title="Enable lights to turn on/off automatically during a time range.">
             <Info size={18} className="text-gray-500 cursor-pointer" />
           </span>

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Info } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import formatToDatetimeLocal from "../utils/changeDateTime";
 import SockJS from "sockjs-client";
 import { CompatClient, Stomp } from "@stomp/stompjs";
@@ -10,12 +10,18 @@ export default function SecurityMode() {
   const [isOn, setOn] = useState(false);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [isAlert, setIsAlert] = useState(false);
   const token = localStorage.getItem("token");
+  const soundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    soundRef.current = new Audio("/police-sirens-316719.mp3");
+  }, []);
 
   const fetchSecurityModeStatus = async () => {
     try {
       const response = await axios.get(
-        "https://smart-home-backend-07op.onrender.com/api/device/DISTANCE-1/auto-mode",
+        "http://localhost:8080/api/device/DISTANCE-1/auto-mode",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -25,9 +31,7 @@ export default function SecurityMode() {
 
       if (response.data.startTime && response.data.endTime) {
         setOn(true);
-      }
-
-      else {
+      } else {
         setOn(false);
       }
 
@@ -55,7 +59,7 @@ export default function SecurityMode() {
 
   useEffect(() => {
     const socket = new SockJS(
-      `https://smart-home-backend-07op.onrender.com/ws?Authorization=${encodeURIComponent(
+      `http://localhost:8080/ws?Authorization=${encodeURIComponent(
         `Bearer ${token}`
       )}`
     );
@@ -65,14 +69,16 @@ export default function SecurityMode() {
       console.log("WebSocket connected");
 
       stompClient.subscribe("/topic/alert", (message) => {
+        if (!soundRef.current) return;
         const alertData = JSON.parse(message.body);
 
         if (alertData.alert) {
           toast.warning(alertData.message, { toastId: "security-alert" });
 
-          const sound = new Audio("/police-sirens-316719.mp3");
-          sound.preload = "auto";
-          sound.play();
+          setIsAlert(true);
+          soundRef.current.preload = "auto";
+          soundRef.current.currentTime = 0;
+          soundRef.current.play();
         }
       });
     });
@@ -99,7 +105,7 @@ export default function SecurityMode() {
         };
 
         const response = await axios.post(
-          "https://smart-home-backend-07op.onrender.com/api/commands/security-mode/on",
+          "http://localhost:8080/api/commands/security-mode/on",
           payload,
           {
             headers: {
@@ -111,7 +117,7 @@ export default function SecurityMode() {
         toast.success(response.data.message, { toastId: "security-toggle" });
       } else {
         const response = await axios.post(
-          "https://smart-home-backend-07op.onrender.com/api/commands/security-mode/off",
+          "http://localhost:8080/api/commands/security-mode/off",
           {},
           {
             headers: {
@@ -131,6 +137,11 @@ export default function SecurityMode() {
     }
   };
 
+  const handleTurnOffSound = () => {
+    setIsAlert(false);
+    soundRef.current?.pause();
+  };
+
   return (
     <div className="bg-white rounded-xl w-full p-8 space-y-4">
       <div className="flex justify-between items-center">
@@ -139,19 +150,25 @@ export default function SecurityMode() {
           <Info size={18} className="text-gray-500 cursor-pointer" />
         </p>
 
-        {/* Toggle switch */}
-        <button
-          onClick={handleToggle}
-          className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 cursor-pointer ${
-            isOn ? "bg-green-500" : "bg-gray-300"
-          }`}
-        >
-          <span
-            className={`inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300 ease-in-out cursor-pointer ${
-              isOn ? "translate-x-5" : "translate-x-1"
+        <div className="flex flex-row space-x-5 justify-center items-center">
+          {isAlert && <button onClick={handleTurnOffSound} className="bg-red-600 rounded-full p-2 h-10 w-10 text-white cursor-pointer">
+            &#9632;
+          </button>}
+
+          {/* Toggle switch */}
+          <button
+            onClick={handleToggle}
+            className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 cursor-pointer ${
+              isOn ? "bg-green-500" : "bg-gray-300"
             }`}
-          />
-        </button>
+          >
+            <span
+              className={`inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300 ease-in-out cursor-pointer ${
+                isOn ? "translate-x-5" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Time Inputs */}

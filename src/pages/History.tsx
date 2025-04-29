@@ -11,7 +11,7 @@ type HistoryRecord = {
   status: "on" | "off";
 };
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 11;
 
 export default function History() {
   const [history, setHistory] = useState<HistoryRecord[]>([]);
@@ -35,7 +35,7 @@ export default function History() {
       const token = localStorage.getItem("token");
 
       const response = await axios.get(
-        "https://smart-home-backend-07op.onrender.com/api/commands/all",
+        "http://localhost:8080/api/commands/all",
         {
           headers: {
             Authorization: `Bearer ${token}`,

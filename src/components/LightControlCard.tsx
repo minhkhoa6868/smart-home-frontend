@@ -29,7 +29,7 @@ export default function LightControlCard({
   const fetchLed = async () => {
     try {
       const response = await axios.get(
-        "https://smart-home-backend-07op.onrender.com/api/device/led",
+        "http://localhost:8080/api/device/led",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ export default function LightControlCard({
     const newStatus = isOn === "On" ? "Off" : "On";
     try {
       await axios.post(
-        "https://smart-home-backend-07op.onrender.com/api/commands/light/status",
+        "http://localhost:8080/api/commands/light/status",
         {
           status: newStatus,
           userId: userId,
@@ -73,7 +73,7 @@ export default function LightControlCard({
   const handleSubmitColor = async () => {
     try {
       await axios.post(
-        "https://smart-home-backend-07op.onrender.com/api/commands/light/color",
+        "http://localhost:8080/api/commands/light/color",
         {
           color: selectedColor,
           userId: userId,

@@ -17,8 +17,8 @@ export default function Signup() {
     }
 
     try {
-      const response = await axios.post(
-        "https://smart-home-backend-07op.onrender.com/auth/signup",
+      await axios.post(
+        "http://localhost:8080/auth/signup",
         {
           username: username,
           password: password,
